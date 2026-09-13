@@ -54,7 +54,10 @@ export default function LossRates({ lossRates, onChange }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
               <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                 {field.label}
-                <Info size={14} style={{ color: 'var(--text-tertiary)', cursor: 'help' }} title={field.detail} />
+                <div className="tooltip-wrapper">
+                  <Info size={14} style={{ color: 'var(--text-tertiary)', cursor: 'help' }} />
+                  <div className="tooltip-content">{field.detail}</div>
+                </div>
               </span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--accent)' }}>
                 {Math.round(value * 100)}%

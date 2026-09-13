@@ -853,11 +853,15 @@ input[type="number"] {
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
   color: var(--text-secondary);
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 250px;
+  width: max-content;
+  text-align: left;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--transition-fast);
   z-index: 1000;
+  box-shadow: var(--shadow-sm);
 }
 
 .tooltip-wrapper:hover .tooltip-content {
