@@ -49,11 +49,12 @@ class SKUCostSingleUpdate(BaseModel):
 class LossRateConfig(BaseModel):
     """User-adjustable COGS loss-rate assumptions (0.0 – 1.0)."""
 
-    rto: float = Field(0.0, ge=0, le=1, description="RTO loss rate")
-    return_rate: float = Field(1.0, ge=0, le=1, description="Customer-return loss rate")
+    rto: float = Field(0.0, ge=0, le=1)
+    return_rate: float = Field(1.0, ge=0, le=1, alias="return", description="Customer-return loss rate")
     lost: float = Field(1.0, ge=0, le=1, description="Lost-shipment loss rate")
     unresolved: float = Field(0.0, ge=0, le=1, description="Unresolved/shipped loss rate")
-    packaging_loss: float = Field(1.0, ge=0, le=1, description="Packaging loss rate")
+    rto_packaging_loss: float = Field(1.0, ge=0, le=1, description="Packaging loss rate for RTOs")
+    return_packaging_loss: float = Field(1.0, ge=0, le=1, description="Packaging loss rate for Returns")
 
 
 # ---------------------------------------------------------------------------

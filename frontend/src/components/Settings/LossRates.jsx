@@ -35,10 +35,17 @@ export default function LossRates({ lossRates, onChange }) {
       default: 0,
     },
     {
-      key: 'packaging_loss',
-      label: 'Packaging Loss',
-      tip: 'Applies to RTOs, Returns, etc.',
-      detail: 'Fraction of packaging cost charged when an order is shipped but not successfully delivered (e.g., RTO, Return, Lost). Default 100% — assumes packaging material is consumed.',
+      key: 'rto_packaging_loss',
+      label: 'RTO Packaging Loss',
+      tip: 'Packaging lost on RTOs',
+      detail: 'Fraction of packaging cost charged when an order is returned to origin (RTO). Default 100% — assumes packaging material is consumed.',
+      default: 1,
+    },
+    {
+      key: 'return_packaging_loss',
+      label: 'Return Packaging Loss',
+      tip: 'Packaging lost on Returns',
+      detail: 'Fraction of packaging cost charged when an order is returned by the customer. Default 100% — assumes packaging material is consumed.',
       default: 1,
     },
   ];
