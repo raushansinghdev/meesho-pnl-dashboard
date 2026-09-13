@@ -93,7 +93,15 @@ export default function ProductsPage({ pnlData }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
           {sorted.map(row => {
             const isProfit = row.profit > 0;
-            const unitCost = row.cogs_making + row.cogs_packaging;
+            // cogs_making and cogs_packaging are totals in the backend. Divide by units for unit cost.
+            const unitCost = row.units > 0 ? (row.cogs_making + row.cogs_packaging) / row.units : 0;
+            
+            // Fallbacks in case the backend hasn't been restarted/re-computed yet
+            const avgSalePrice = row.avg_sale_price ?? (row.units > 0 ? row.gross_sale_amount / row.units : 0);
+            const delivered = row.delivered_orders ?? 0;
+            const rto = row.rto_orders ?? 0;
+            const returnOrders = row.return_orders ?? 0;
+            const rtoCost = row.rto_cost ?? 0;
             
             return (
               <div key={row.sku} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
@@ -119,7 +127,7 @@ export default function ProductsPage({ pnlData }) {
                   
                   <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
                     <span className="badge badge--info" style={{ fontWeight: 600 }}>
-                      {fmtWhole(row.avg_sale_price)} LP
+                      {fmtWhole(avgSalePrice)} LP
                     </span>
                     <span className="badge badge--warning" style={{ fontWeight: 600 }}>
                       {fmtWhole(unitCost)} cost
@@ -135,17 +143,17 @@ export default function ProductsPage({ pnlData }) {
                     <div style={{ height: '3px', background: 'var(--border-medium)', marginTop: '4px', borderRadius: '2px' }} />
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>{row.delivered_orders}</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>{delivered}</div>
                     <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>DELIVERED</div>
                     <div style={{ height: '3px', background: 'var(--success)', marginTop: '4px', borderRadius: '2px' }} />
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--danger)' }}>{row.rto_orders}</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--danger)' }}>{rto}</div>
                     <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>RTO</div>
                     <div style={{ height: '3px', background: 'var(--danger)', marginTop: '4px', borderRadius: '2px' }} />
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--warning)' }}>{row.return_orders}</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--warning)' }}>{returnOrders}</div>
                     <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>RETURN</div>
                     <div style={{ height: '3px', background: 'var(--warning)', marginTop: '4px', borderRadius: '2px' }} />
                   </div>
@@ -163,7 +171,7 @@ export default function ProductsPage({ pnlData }) {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
                     <span style={{ color: 'var(--text-secondary)' }}>RTO Cost</span>
-                    <span style={{ fontWeight: 600, color: 'var(--danger)' }}>{fmt(row.rto_cost)}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--danger)' }}>{fmt(rtoCost)}</span>
                   </div>
                 </div>
 
