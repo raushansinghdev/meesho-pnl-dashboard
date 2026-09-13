@@ -1,7 +1,7 @@
 import { Upload, TrendingUp } from 'lucide-react';
 import KPICards from '../components/Dashboard/KPICards';
 import StatusBreakdown from '../components/Dashboard/StatusBreakdown';
-import RevenueSplit from '../components/Dashboard/RevenueSplit';
+import PnLWaterfall from '../components/Dashboard/PnLWaterfall';
 import MarginTable from '../components/Dashboard/MarginTable';
 
 export default function DashboardPage({ pnlData }) {
@@ -93,12 +93,12 @@ export default function DashboardPage({ pnlData }) {
         </div>
 
         {/* ── KPI Cards ────────────────────────────────────── */}
-        <KPICards overall={overall} />
+        <KPICards overall={overall} status_breakdown={status_breakdown} />
 
         {/* ── Two Donut Charts ─────────────────────────────── */}
         <div className="grid-2">
           <StatusBreakdown breakdown={status_breakdown} />
-          <RevenueSplit overall={overall} />
+          <PnLWaterfall overall={overall} />
         </div>
 
         {/* ── Product-wise P&L Table ───────────────────────── */}

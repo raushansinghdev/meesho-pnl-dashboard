@@ -4,12 +4,19 @@ import { Landmark, Package, RotateCcw, Box } from 'lucide-react';
  * KPICards — Flat metric cards with colored icon circles.
  * Shows Settlement, Item Cost, RTO/Return, Packaging.
  */
-export default function KPICards({ overall }) {
+export default function KPICards({ overall, status_breakdown }) {
   if (!overall) return null;
 
   const rtoReturnCost = (overall.cogs_making || 0) > 0
     ? Math.round(((overall.cogs || 0) - (overall.cogs_making || 0)) * 100) / 100
     : 0;
+
+  let rtoReturnOrders = 0;
+  if (status_breakdown) {
+    rtoReturnOrders = status_breakdown
+      .filter(s => s.status === 'rto' || s.status === 'return')
+      .reduce((sum, s) => sum + (s.order_count || 0), 0);
+  }
 
   const cards = [
     {
@@ -29,14 +36,14 @@ export default function KPICards({ overall }) {
     {
       label: 'RTO / RETURN',
       value: rtoReturnCost,
-      subtitle: `${overall.total_orders} orders`,
+      subtitle: `${rtoReturnOrders} orders`,
       icon: RotateCcw,
       iconClass: 'kpi-card__icon--yellow',
     },
     {
       label: 'PACKAGING',
       value: overall.cogs_packaging || 0,
-      subtitle: 'Per order cost',
+      subtitle: 'Total cost',
       icon: Box,
       iconClass: 'kpi-card__icon--purple',
     },
