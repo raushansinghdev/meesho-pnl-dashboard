@@ -1,12 +1,12 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const STATUS_COLORS = {
-  delivered: '#10b981',
+  delivered: '#22c55e',
   exchange: '#06b6d4',
-  rto: '#f59e0b',
-  return: '#f43f5e',
+  rto: '#ef4444',
+  return: '#f59e0b',
   cancelled: '#6b7280',
-  lost: '#8b5cf6',
+  lost: '#a855f7',
   shipped: '#3b82f6',
   unknown: '#374151',
 };
@@ -23,7 +23,8 @@ const STATUS_LABELS = {
 };
 
 /**
- * StatusBreakdown — Donut chart showing order-status distribution.
+ * StatusBreakdown — Donut chart with total order count in center
+ * and a side legend showing counts + percentages.
  */
 export default function StatusBreakdown({ breakdown }) {
   if (!breakdown || breakdown.length === 0) return null;
@@ -31,10 +32,11 @@ export default function StatusBreakdown({ breakdown }) {
   const data = breakdown.map(item => ({
     name: STATUS_LABELS[item.status] || item.status,
     value: item.order_count,
-    settlement: item.total_settlement,
     percentage: item.percentage,
     color: STATUS_COLORS[item.status] || '#374151',
   }));
+
+  const totalOrders = data.reduce((sum, d) => sum + d.value, 0);
 
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
@@ -44,62 +46,70 @@ export default function StatusBreakdown({ breakdown }) {
         background: 'var(--bg-elevated)',
         border: '1px solid var(--border-medium)',
         borderRadius: 'var(--radius-md)',
-        padding: 'var(--space-3) var(--space-4)',
+        padding: 'var(--space-2) var(--space-3)',
         fontSize: 'var(--text-sm)',
       }}>
-        <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 'var(--space-1)' }}>
-          {d.name}
-        </div>
-        <div style={{ color: 'var(--text-secondary)' }}>
-          {d.value} orders ({d.percentage}%)
-        </div>
-        <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', marginTop: 'var(--space-1)' }}>
-          ₹{d.settlement.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-        </div>
+        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{d.name}</div>
+        <div style={{ color: 'var(--text-secondary)' }}>{d.value} orders ({d.percentage}%)</div>
       </div>
     );
   };
 
-  const renderLegend = (props) => {
-    const { payload } = props;
-    return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', justifyContent: 'center', marginTop: 'var(--space-4)' }}>
-        {payload.map((entry, index) => (
-          <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color }} />
-            {entry.value}
-          </div>
-        ))}
-      </div>
-    );
-  };
+  // Custom label in center of the donut
+  const CenterLabel = () => (
+    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central">
+      <tspan x="50%" dy="-8" fill="var(--text-primary)" fontSize="24" fontWeight="700" fontFamily="var(--font-mono)">{totalOrders}</tspan>
+      <tspan x="50%" dy="22" fill="var(--text-tertiary)" fontSize="11" fontWeight="500">ORDERS</tspan>
+    </text>
+  );
 
   return (
-    <div className="glass-card animate-in animate-in-delay-5">
-      <div className="section-title">
-        <span>Order Status Distribution</span>
+    <div className="card animate-in animate-in-delay-3">
+      <div className="section-header">
+        <div className="section-title">Order Status</div>
+        <div className="section-count">{totalOrders} total</div>
       </div>
-      <div style={{ width: '100%', height: 320 }}>
-        <ResponsiveContainer>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="45%"
-              innerRadius={65}
-              outerRadius={100}
-              paddingAngle={3}
-              dataKey="value"
-              stroke="none"
-            >
-              {data.map((entry, index) => (
-                <Cell key={index} fill={entry.color} fillOpacity={0.85} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend content={renderLegend} />
-          </PieChart>
-        </ResponsiveContainer>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
+        {/* Donut */}
+        <div style={{ width: 180, height: 180, flexShrink: 0 }}>
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius={52}
+                outerRadius={80}
+                paddingAngle={2}
+                dataKey="value"
+                stroke="none"
+              >
+                {data.map((entry, index) => (
+                  <Cell key={index} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <CenterLabel />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Legend */}
+        <div className="donut-legend" style={{ flex: 1 }}>
+          {data.map((d, i) => (
+            <div key={i} className="donut-legend__item">
+              <div className="donut-legend__label">
+                <div className="donut-legend__dot" style={{ background: d.color }} />
+                {d.name}
+              </div>
+              <div className="donut-legend__values">
+                <span className="donut-legend__count">{d.value}</span>
+                <span className="donut-legend__pct">{d.percentage}%</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

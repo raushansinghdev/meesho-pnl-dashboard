@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react';
-import { Search, Download, AlertTriangle, ArrowUpDown } from 'lucide-react';
+import { Search, Download, ArrowUpDown, ArrowRight } from 'lucide-react';
 
 /**
- * MarginTable — Full SKU-wise P&L table with sorting, search, and CSV export.
+ * MarginTable — Clean product-wise P&L table with row numbers,
+ * sorting, search, and CSV export.
  */
 export default function MarginTable({ skuRows }) {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState('profit');
   const [sortAsc, setSortAsc] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const filtered = useMemo(() => {
     if (!skuRows) return [];
@@ -29,6 +31,8 @@ export default function MarginTable({ skuRows }) {
     return rows;
   }, [skuRows, search, sortKey, sortAsc]);
 
+  const displayed = showAll ? filtered : filtered.slice(0, 15);
+
   const handleSort = (key) => {
     if (sortKey === key) {
       setSortAsc(!sortAsc);
@@ -40,9 +44,9 @@ export default function MarginTable({ skuRows }) {
 
   const handleExport = () => {
     if (!skuRows?.length) return;
-    const headers = ['SKU', 'Orders', 'Units', 'Revenue', 'COGS', 'COGS Making', 'COGS Packaging', 'Profit', 'Margin %'];
-    const csvRows = skuRows.map(r => [
-      r.sku, r.orders, r.units, r.net_settlement, r.cogs, r.cogs_making, r.cogs_packaging, r.profit, r.margin_pct ?? ''
+    const headers = ['#', 'Product', 'Qty', 'Revenue', 'COGS', 'Profit', 'Margin %'];
+    const csvRows = skuRows.map((r, i) => [
+      i + 1, r.sku, r.units, r.net_settlement, r.cogs, r.profit, r.margin_pct ?? ''
     ]);
     const csv = [headers.join(','), ...csvRows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -57,46 +61,44 @@ export default function MarginTable({ skuRows }) {
   const fmt = (v) => v != null ? `₹${v.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—';
 
   const columns = [
-    { key: 'sku', label: 'SKU', align: 'left' },
-    { key: 'orders', label: 'Orders', align: 'right' },
-    { key: 'units', label: 'Units', align: 'right' },
-    { key: 'net_settlement', label: 'Revenue', align: 'right' },
-    { key: 'cogs', label: 'COGS', align: 'right' },
+    { key: 'sku', label: 'Product', align: 'left' },
+    { key: 'units', label: 'Qty', align: 'right' },
+    { key: 'net_settlement', label: 'Settlement', align: 'right' },
+    { key: 'cogs', label: 'Item Cost', align: 'right' },
     { key: 'profit', label: 'Profit', align: 'right' },
-    { key: 'margin_pct', label: 'Margin %', align: 'right' },
+    { key: 'margin_pct', label: 'Margin', align: 'right' },
   ];
 
   if (!skuRows) return null;
 
   return (
-    <div className="glass-card animate-in animate-in-delay-6">
+    <div className="card animate-in animate-in-delay-5">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-        <div className="section-title" style={{ marginBottom: 0 }}>
-          <span>SKU-wise P&L</span>
-        </div>
+        <div className="section-title">Product-wise P&L</div>
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
           <div className="search-input">
-            <Search size={14} className="search-input__icon" />
+            <Search size={13} className="search-input__icon" />
             <input
               type="text"
               className="input"
               placeholder="Search SKU..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: 200 }}
+              style={{ width: 180 }}
             />
           </div>
           <button className="btn btn--secondary btn--sm" onClick={handleExport}>
-            <Download size={14} />
-            Export CSV
+            <Download size={13} />
+            Export
           </button>
         </div>
       </div>
 
-      <div style={{ overflowX: 'auto', maxHeight: 480 }}>
+      <div style={{ overflowX: 'auto', maxHeight: 500 }}>
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ textAlign: 'center', width: 40 }}>#</th>
               {columns.map(col => (
                 <th
                   key={col.key}
@@ -106,18 +108,17 @@ export default function MarginTable({ skuRows }) {
                 >
                   {col.label}
                   {sortKey === col.key && (
-                    <ArrowUpDown size={10} style={{ marginLeft: 4, opacity: 0.7 }} />
+                    <ArrowUpDown size={9} style={{ marginLeft: 3, opacity: 0.7 }} />
                   )}
                 </th>
               ))}
-              <th style={{ textAlign: 'center' }}>Cost Status</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((row) => (
+            {displayed.map((row, idx) => (
               <tr key={row.sku}>
+                <td style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{idx + 1}</td>
                 <td style={{ fontWeight: 500 }}>{row.sku}</td>
-                <td className="number">{row.orders}</td>
                 <td className="number">{row.units}</td>
                 <td className="number">{fmt(row.net_settlement)}</td>
                 <td className="number">{fmt(row.cogs)}</td>
@@ -127,24 +128,26 @@ export default function MarginTable({ skuRows }) {
                 <td className={`number ${row.margin_pct !== null && row.margin_pct >= 0 ? 'positive' : row.margin_pct !== null ? 'negative' : ''}`}>
                   {row.margin_pct !== null ? `${row.margin_pct}%` : '—'}
                 </td>
-                <td style={{ textAlign: 'center' }}>
-                  {row.cost_mapped ? (
-                    <span className="badge badge--verified" style={{ fontSize: 'var(--text-xs)' }}>Mapped</span>
-                  ) : (
-                    <span className="badge badge--warning">
-                      <AlertTriangle size={10} />
-                      Unmapped
-                    </span>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
+      {!showAll && filtered.length > 15 && (
+        <div style={{ textAlign: 'right', marginTop: 'var(--space-3)' }}>
+          <button
+            className="btn btn--ghost btn--sm"
+            onClick={() => setShowAll(true)}
+            style={{ color: 'var(--accent)' }}
+          >
+            View All <ArrowRight size={13} />
+          </button>
+        </div>
+      )}
+
       {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>
+        <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--text-tertiary)' }}>
           No SKUs found matching "{search}"
         </div>
       )}

@@ -1,74 +1,62 @@
-import { TrendingUp, IndianRupee, Package, Megaphone } from 'lucide-react';
-import AnimatedNumber from '../common/AnimatedNumber';
-import ConfidenceBadge from '../common/ConfidenceBadge';
+import { Landmark, Package, RotateCcw, Box } from 'lucide-react';
 
-const cards = [
-  {
-    key: 'net_profit',
-    label: 'Net Profit',
-    icon: TrendingUp,
-    confidence: 'estimated',
-    getValue: (o) => o.net_profit,
-    colorClass: (v) => v >= 0 ? 'kpi-card__value--positive' : 'kpi-card__value--negative',
-    subtitle: (o) => `${o.total_orders} orders · ${o.payment_window_start} → ${o.payment_window_end}`,
-  },
-  {
-    key: 'net_settlement',
-    label: 'Net Settlement',
-    icon: IndianRupee,
-    confidence: 'verified',
-    getValue: (o) => o.net_settlement,
-    colorClass: () => 'kpi-card__value--neutral',
-    subtitle: () => 'Revenue from Meesho (bank-verified)',
-  },
-  {
-    key: 'cogs',
-    label: 'Total COGS',
-    icon: Package,
-    confidence: 'estimated',
-    getValue: (o) => o.cogs,
-    colorClass: () => 'kpi-card__value--negative',
-    subtitle: (o) => `Making: ₹${o.cogs_making?.toLocaleString('en-IN')} · Packaging: ₹${o.cogs_packaging?.toLocaleString('en-IN')}`,
-  },
-  {
-    key: 'ads_cost',
-    label: 'Ads Spend',
-    icon: Megaphone,
-    confidence: 'verified',
-    getValue: (o) => Math.abs(o.ads_cost),
-    colorClass: () => 'kpi-card__value--negative',
-    subtitle: () => 'Campaign spend (netted from settlement)',
-  },
-];
-
+/**
+ * KPICards — Flat metric cards with colored icon circles.
+ * Shows Settlement, Item Cost, RTO/Return, Packaging.
+ */
 export default function KPICards({ overall }) {
   if (!overall) return null;
 
+  const rtoReturnCost = (overall.cogs_making || 0) > 0
+    ? Math.round(((overall.cogs || 0) - (overall.cogs_making || 0)) * 100) / 100
+    : 0;
+
+  const cards = [
+    {
+      label: 'SETTLEMENT',
+      value: overall.net_settlement,
+      subtitle: 'From Meesho',
+      icon: Landmark,
+      iconClass: 'kpi-card__icon--blue',
+    },
+    {
+      label: 'ITEM COST',
+      value: overall.cogs,
+      subtitle: 'Cost of goods',
+      icon: Package,
+      iconClass: 'kpi-card__icon--red',
+    },
+    {
+      label: 'RTO / RETURN',
+      value: rtoReturnCost,
+      subtitle: `${overall.total_orders} orders`,
+      icon: RotateCcw,
+      iconClass: 'kpi-card__icon--yellow',
+    },
+    {
+      label: 'PACKAGING',
+      value: overall.cogs_packaging || 0,
+      subtitle: 'Per order cost',
+      icon: Box,
+      iconClass: 'kpi-card__icon--purple',
+    },
+  ];
+
+  const fmt = (v) => `₹${Math.abs(v).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
   return (
-    <div className="grid-kpi">
+    <div className="kpi-grid">
       {cards.map((card, idx) => {
         const Icon = card.icon;
-        const value = card.getValue(overall);
-
         return (
-          <div
-            key={card.key}
-            className={`kpi-card animate-in animate-in-delay-${idx + 1}`}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
-              <div className="kpi-card__label">
-                <Icon size={14} style={{ marginRight: 'var(--space-2)', verticalAlign: 'middle' }} />
-                {card.label}
-              </div>
-              <ConfidenceBadge type={card.confidence} />
+          <div key={card.label} className={`kpi-card animate-in animate-in-delay-${idx + 1}`}>
+            <div className={`kpi-card__icon ${card.iconClass}`}>
+              <Icon size={20} />
             </div>
-
-            <div className={`kpi-card__value ${card.colorClass(value)}`}>
-              <AnimatedNumber value={value} />
-            </div>
-
-            <div className="kpi-card__subtitle">
-              {card.subtitle(overall)}
+            <div className="kpi-card__content">
+              <div className="kpi-card__label">{card.label}</div>
+              <div className="kpi-card__value">{fmt(card.value)}</div>
+              <div className="kpi-card__subtitle">{card.subtitle}</div>
             </div>
           </div>
         );

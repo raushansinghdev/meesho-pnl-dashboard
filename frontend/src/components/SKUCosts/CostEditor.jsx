@@ -157,7 +157,7 @@ export default function CostEditor() {
       )}
 
       {/* Table */}
-      <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ overflowX: 'auto', maxHeight: 560 }}>
           <table className="data-table">
             <thead>

@@ -1,8 +1,7 @@
-import { BarChart3, Upload } from 'lucide-react';
+import { Upload, TrendingUp } from 'lucide-react';
 import KPICards from '../components/Dashboard/KPICards';
-import PnLWaterfall from '../components/Dashboard/PnLWaterfall';
-import SKUProfitChart from '../components/Dashboard/SKUProfitChart';
 import StatusBreakdown from '../components/Dashboard/StatusBreakdown';
+import RevenueSplit from '../components/Dashboard/RevenueSplit';
 import MarginTable from '../components/Dashboard/MarginTable';
 
 export default function DashboardPage({ pnlData }) {
@@ -10,15 +9,15 @@ export default function DashboardPage({ pnlData }) {
     return (
       <>
         <div className="page-header">
-          <h1 className="page-header__title">Dashboard</h1>
+          <h1 className="page-header__title">Overview</h1>
           <p className="page-header__subtitle">Upload a payment file to see your P&L analysis</p>
         </div>
         <div className="page-body">
-          <div className="empty-state glass-card">
-            <Upload size={48} className="empty-state__icon" />
+          <div className="card empty-state">
+            <Upload size={40} className="empty-state__icon" />
             <h2 className="empty-state__title">No data yet</h2>
             <p className="empty-state__subtitle">
-              Go to the Upload page, drop your Meesho payment file, and compute your P&L to see the dashboard come alive.
+              Go to Upload, drop your Meesho payment file, and compute your P&L.
             </p>
           </div>
         </div>
@@ -28,55 +27,101 @@ export default function DashboardPage({ pnlData }) {
 
   const { overall, sku_rows, status_breakdown, unmapped_skus, review_orders } = pnlData;
 
+  const marginPct = overall.net_settlement > 0
+    ? ((overall.net_profit / overall.net_settlement) * 100).toFixed(2)
+    : 0;
+  const avgPerOrder = overall.total_orders > 0
+    ? (overall.net_profit / overall.total_orders).toFixed(2)
+    : 0;
+
+  // Find delivered count for the mini stat
+  const deliveredItem = status_breakdown?.find(s => s.status === 'delivered');
+  const deliveredCount = deliveredItem?.order_count || 0;
+  const deliveredPct = overall.total_orders > 0
+    ? Math.round((deliveredCount / overall.total_orders) * 100)
+    : 0;
+
   return (
     <>
       <div className="page-header">
         <h1 className="page-header__title">
-          <BarChart3 size={24} style={{ verticalAlign: 'middle', marginRight: 'var(--space-2)', color: 'var(--accent)' }} />
-          P&L Dashboard
+          <TrendingUp size={20} style={{ color: 'var(--accent)' }} />
+          Overview
         </h1>
         <p className="page-header__subtitle">
-          Payment window: {overall.payment_window_start} → {overall.payment_window_end} · {overall.total_orders} orders · {overall.total_units} units
+          {overall.payment_window_start} → {overall.payment_window_end}
         </p>
       </div>
 
       <div className="page-body">
-        {/* KPI Hero Cards */}
+        {/* ── Hero Banner ──────────────────────────────────── */}
+        <div className="hero-banner animate-in">
+          <div className="hero-banner__left">
+            <div className="hero-banner__label">
+              <span className="dot" />
+              NET PROFIT
+            </div>
+            <div className="hero-banner__value">
+              ₹{Math.abs(overall.net_profit).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </div>
+            <div className="hero-banner__tags">
+              <span className="hero-banner__tag">
+                ↗ {marginPct}% margin
+              </span>
+              <span className="hero-banner__tag">
+                ₹{avgPerOrder} avg/order
+              </span>
+            </div>
+          </div>
+
+          <div className="hero-banner__right">
+            <div className="hero-stats">
+              <div className="hero-stats__row">
+                <span className="hero-stats__pct">{deliveredPct}%</span>
+                <span className="hero-stats__label">DELIVERED</span>
+              </div>
+              <div className="hero-stats__row">
+                <span className="hero-stats__number">{overall.total_orders}</span>
+                <span className="hero-stats__label">Total Orders</span>
+              </div>
+              <div className="hero-stats__row">
+                <span className="hero-stats__number">{deliveredCount}</span>
+                <span className="hero-stats__label">Delivered</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── KPI Cards ────────────────────────────────────── */}
         <KPICards overall={overall} />
 
-        {/* Charts Row */}
-        <div className="grid-charts">
-          <PnLWaterfall overall={overall} />
+        {/* ── Two Donut Charts ─────────────────────────────── */}
+        <div className="grid-2">
           <StatusBreakdown breakdown={status_breakdown} />
+          <RevenueSplit overall={overall} />
         </div>
 
-        {/* SKU Profit Chart */}
-        <div className="grid-full">
-          <SKUProfitChart skuRows={sku_rows} />
-        </div>
-
-        {/* Full SKU Table */}
+        {/* ── Product-wise P&L Table ───────────────────────── */}
         <div className="grid-full">
           <MarginTable skuRows={sku_rows} />
         </div>
 
-        {/* Warnings section */}
+        {/* ── Warnings ─────────────────────────────────────── */}
         {(unmapped_skus?.length > 0 || review_orders?.length > 0) && (
           <div className="grid-full">
-            <div className="glass-card" style={{ borderColor: 'var(--warning-muted)' }}>
+            <div className="card" style={{ borderColor: 'var(--warning-muted)' }}>
               {unmapped_skus?.length > 0 && (
-                <div style={{ marginBottom: review_orders?.length > 0 ? 'var(--space-6)' : 0 }}>
-                  <div className="section-title" style={{ color: 'var(--warning)' }}>
+                <div style={{ marginBottom: review_orders?.length > 0 ? 'var(--space-5)' : 0 }}>
+                  <div className="section-title" style={{ color: 'var(--warning)', marginBottom: 'var(--space-2)' }}>
                     ⚠️ {unmapped_skus.length} Unmapped SKU(s)
                   </div>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
-                    These SKUs have no cost in the cost file — their COGS is treated as ₹0, overstating their profit.
-                    Add them in the SKU Costs page and recompute.
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
+                    These SKUs have no cost mapping — their COGS is ₹0. Add them in Costs and recompute.
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
                     {unmapped_skus.map(u => (
                       <span key={u.sku} className="badge badge--warning">
-                        {u.sku} ({u.order_count} orders · ₹{u.settlement_amount?.toLocaleString('en-IN')})
+                        {u.sku} ({u.order_count} orders)
                       </span>
                     ))}
                   </div>
@@ -85,14 +130,14 @@ export default function DashboardPage({ pnlData }) {
 
               {review_orders?.length > 0 && (
                 <div>
-                  <div className="section-title" style={{ color: 'var(--info)' }}>
+                  <div className="section-title" style={{ color: 'var(--info)', marginBottom: 'var(--space-2)' }}>
                     ℹ️ {review_orders.length} Order(s) with No Status
                   </div>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
-                    These settled orders had no recognisable status — COGS defaulted to the unresolved rate.
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
+                    COGS defaulted to unresolved rate for these.
                   </p>
                   <div style={{ overflowX: 'auto' }}>
-                    <table className="data-table" style={{ maxWidth: 500 }}>
+                    <table className="data-table" style={{ maxWidth: 450 }}>
                       <thead>
                         <tr>
                           <th>Sub Order No</th>

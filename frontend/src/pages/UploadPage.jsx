@@ -42,7 +42,7 @@ export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
 
       <div className="page-body">
         {/* Step 1: File Uploads */}
-        <div className="glass-card" style={{ marginBottom: 'var(--space-6)' }}>
+        <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
           <div className="section-title">
             <span style={{
               display: 'inline-flex',
@@ -65,7 +65,7 @@ export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
         </div>
 
         {/* Step 2: Loss Rate Config */}
-        <div className="glass-card" style={{ marginBottom: 'var(--space-6)' }}>
+        <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
           <div className="section-title">
             <span style={{
               display: 'inline-flex',
@@ -89,7 +89,7 @@ export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
         </div>
 
         {/* Step 3: Compute */}
-        <div className="glass-card">
+        <div className="card">
           <div className="section-title">
             <span style={{
               display: 'inline-flex',

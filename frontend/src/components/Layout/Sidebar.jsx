@@ -1,11 +1,14 @@
 import { NavLink } from 'react-router-dom';
-import { BarChart3, Upload, Package, Settings, TrendingUp } from 'lucide-react';
+import { BarChart3, Upload, Package, Settings } from 'lucide-react';
 
-const navItems = [
-  { to: '/',         icon: BarChart3,  label: 'Dashboard' },
-  { to: '/upload',   icon: Upload,     label: 'Upload Files' },
-  { to: '/sku-costs', icon: Package,   label: 'SKU Costs' },
-  { to: '/settings', icon: Settings,   label: 'Settings' },
+const menuItems = [
+  { to: '/',          icon: BarChart3, label: 'Overview' },
+  { to: '/upload',    icon: Upload,    label: 'Upload' },
+];
+
+const reportItems = [
+  { to: '/sku-costs', icon: Package,   label: 'Costs' },
+  { to: '/settings',  icon: Settings,  label: 'Settings' },
 ];
 
 export default function Sidebar() {
@@ -18,8 +21,9 @@ export default function Sidebar() {
         <p>Meesho P&L Dashboard</p>
       </div>
 
+      <div className="sidebar__section-label">Menu</div>
       <nav className="sidebar__nav">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {menuItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
@@ -28,20 +32,27 @@ export default function Sidebar() {
             }
             end={to === '/'}
           >
-            <Icon size={18} />
+            <Icon size={16} />
             {label}
           </NavLink>
         ))}
       </nav>
 
-      <div style={{ padding: '0 var(--space-6)', marginTop: 'auto' }}>
-        <div className="glass-card" style={{ padding: 'var(--space-4)', textAlign: 'center' }}>
-          <TrendingUp size={20} style={{ color: 'var(--accent)', marginBottom: 'var(--space-2)' }} />
-          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-            Built for transparent,<br />bank-verified P&L
-          </p>
-        </div>
-      </div>
+      <div className="sidebar__section-label">Report</div>
+      <nav className="sidebar__nav">
+        {reportItems.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
+            }
+          >
+            <Icon size={16} />
+            {label}
+          </NavLink>
+        ))}
+      </nav>
     </aside>
   );
 }
