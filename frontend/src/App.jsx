@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import UploadPage from './pages/UploadPage';
 import SKUCostsPage from './pages/SKUCostsPage';
 import SettingsPage from './pages/SettingsPage';
+import ProductsPage from './pages/ProductsPage';
 
 /**
  * App — Root component with routing and shared state.
@@ -27,6 +28,7 @@ export default function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<DashboardPage pnlData={pnlData} />} />
+          <Route path="/products" element={<ProductsPage pnlData={pnlData} />} />
           <Route
             path="/upload"
             element={

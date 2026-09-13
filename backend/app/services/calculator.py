@@ -178,14 +178,25 @@ def summarize_account_level(source) -> dict[str, float]:
 def build_sku_report(order_level: pd.DataFrame) -> pd.DataFrame:
     """Aggregate order-level data into a SKU-wise P&L table, sorted by profit."""
 
+    order_level["is_delivered"] = (order_level["status_norm"] == "delivered").astype(int)
+    order_level["is_rto"] = (order_level["status_norm"] == "rto").astype(int)
+    order_level["is_return"] = (order_level["status_norm"] == "return").astype(int)
+    order_level["rto_cogs"] = order_level.apply(
+        lambda r: r["cogs"] if r["status_norm"] == "rto" else 0.0, axis=1
+    )
+
     sku = order_level.groupby("supplier_sku").agg(
         orders=("Sub Order No", "count"),
         units=("quantity", "sum"),
+        delivered_orders=("is_delivered", "sum"),
+        rto_orders=("is_rto", "sum"),
+        return_orders=("is_return", "sum"),
         gross_sale_amount=("gross_sale_amount", "sum"),
         net_settlement=("net_settlement", "sum"),
         cogs=("cogs", "sum"),
         cogs_making=("cogs_making", "sum"),
         cogs_packaging=("cogs_packaging", "sum"),
+        rto_cost=("rto_cogs", "sum"),
         profit=("profit", "sum"),
         cost_mapped=("cost_mapped", "all"),
         product_name=("product_name", "first"),

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Search, Download, ArrowUpDown, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 /**
  * MarginTable — Clean product-wise P&L table with row numbers,
@@ -136,13 +137,13 @@ export default function MarginTable({ skuRows }) {
 
       {!showAll && filtered.length > 15 && (
         <div style={{ textAlign: 'right', marginTop: 'var(--space-3)' }}>
-          <button
+          <Link
+            to="/products"
             className="btn btn--ghost btn--sm"
-            onClick={() => setShowAll(true)}
             style={{ color: 'var(--accent)' }}
           >
             View All <ArrowRight size={13} />
-          </button>
+          </Link>
         </div>
       )}
 

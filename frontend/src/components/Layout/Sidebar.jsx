@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { BarChart3, Upload, Package, Settings } from 'lucide-react';
+import { BarChart3, Upload, Package, Settings, Box } from 'lucide-react';
 
 const menuItems = [
   { to: '/',          icon: BarChart3, label: 'Overview' },
@@ -7,6 +7,7 @@ const menuItems = [
 ];
 
 const reportItems = [
+  { to: '/products',  icon: Box,       label: 'Products' },
   { to: '/sku-costs', icon: Package,   label: 'Costs' },
   { to: '/settings',  icon: Settings,  label: 'Settings' },
 ];

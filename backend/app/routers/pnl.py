@@ -123,14 +123,19 @@ async def compute_pnl(request: ComputeRequest):
             product_name=row.get("product_name"),
             orders=int(row["orders"]),
             units=safe_round(float(row["units"])),
+            delivered_orders=int(row.get("delivered_orders", 0)),
+            rto_orders=int(row.get("rto_orders", 0)),
+            return_orders=int(row.get("return_orders", 0)),
             gross_sale_amount=safe_round(float(row["gross_sale_amount"])),
             net_settlement=safe_round(float(row["net_settlement"])),
             cogs=safe_round(float(row["cogs"])),
             cogs_making=safe_round(float(row.get("cogs_making", 0))),
             cogs_packaging=safe_round(float(row.get("cogs_packaging", 0))),
+            rto_cost=safe_round(float(row.get("rto_cost", 0))),
             profit=safe_round(float(row["profit"])),
             margin_pct=safe_round(float(row["margin_pct"])) if row["margin_pct"] is not None else None,
             cost_mapped=bool(row["cost_mapped"]),
+            avg_sale_price=safe_round(float(row["gross_sale_amount"] / row["units"])) if float(row.get("units", 0)) > 0 else 0.0,
         )
         for _, row in sku_df.iterrows()
     ]

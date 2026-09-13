@@ -94,6 +94,11 @@ class SKUPnLRow(BaseModel):
     profit: float
     margin_pct: float | None = None
     cost_mapped: bool
+    delivered_orders: int = 0
+    rto_orders: int = 0
+    return_orders: int = 0
+    rto_cost: float = 0.0
+    avg_sale_price: float = 0.0
 
 
 class StatusBreakdownItem(BaseModel):
