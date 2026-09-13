@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend
+    container_name: meesho-pnl-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data
+    environment:
+      - MEESHO_DATA_DIR=/app/data
+      - MEESHO_UPLOADS_DIR=/app/data/uploads
+      - MEESHO_RESULTS_DIR=/app/data/results
+      - MEESHO_SKU_COSTS_FILE=sku_costs.json
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: meesho-pnl-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

@@ -1,0 +1,22 @@
+# Python / Backend
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+*.pyc
+.pytest_cache/
+backend/data/uploads/*
+backend/data/results/*
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.eslintcache
+
+# Env and local configs
+.env
+.DS_Store
+*.xlsx
+*.csv
+
+# Sensitive / user data
+sku\ costs.json
