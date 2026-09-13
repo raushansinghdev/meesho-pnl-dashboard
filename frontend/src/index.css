@@ -848,11 +848,12 @@ input[type="number"] {
   left: 50%;
   transform: translateX(-50%);
   padding: var(--space-2) var(--space-3);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-medium);
+  background: var(--text-primary);
+  border: 1px solid var(--text-primary);
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
-  color: var(--text-secondary);
+  color: var(--bg-primary);
+  font-weight: 500;
   white-space: normal;
   max-width: 250px;
   width: max-content;
@@ -861,7 +862,7 @@ input[type="number"] {
   pointer-events: none;
   transition: opacity var(--transition-fast);
   z-index: 1000;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .tooltip-wrapper:hover .tooltip-content {
