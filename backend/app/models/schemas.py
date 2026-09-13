@@ -53,6 +53,7 @@ class LossRateConfig(BaseModel):
     return_rate: float = Field(1.0, ge=0, le=1, description="Customer-return loss rate")
     lost: float = Field(1.0, ge=0, le=1, description="Lost-shipment loss rate")
     unresolved: float = Field(0.0, ge=0, le=1, description="Unresolved/shipped loss rate")
+    packaging_loss: float = Field(1.0, ge=0, le=1, description="Packaging loss rate")
 
 
 # ---------------------------------------------------------------------------

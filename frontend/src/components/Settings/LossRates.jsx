@@ -8,31 +8,38 @@ export default function LossRates({ lossRates, onChange }) {
   const fields = [
     {
       key: 'rto',
-      label: 'RTO',
+      label: 'RTO Making Cost',
       tip: 'Item returns to inventory',
-      detail: 'Fraction of COGS charged when the buyer never accepted delivery. Default 0% — assumes item returns to inventory resellable. Note: under the v2 model, packaging cost is ALWAYS charged for RTOs regardless of this rate.',
+      detail: 'Fraction of making cost charged when the buyer never accepted delivery. Default 0% — assumes item returns to inventory resellable.',
       default: 0,
     },
     {
       key: 'returnRate',
       label: 'Return',
       tip: 'Buyer returned after delivery',
-      detail: 'Fraction of COGS charged when the buyer accepted then returned. Default 100% — assumes damaged/swapped/unsellable in most real cases. This is a policy judgment, not a measured fact.',
+      detail: 'Fraction of making cost charged when the buyer accepted then returned. Default 100% — assumes damaged/swapped/unsellable in most real cases.',
       default: 1,
     },
     {
       key: 'lost',
       label: 'Lost',
       tip: 'Courier lost the shipment',
-      detail: 'Fraction of COGS charged when the courier lost the shipment. Default 100% — item is genuinely gone.',
+      detail: 'Fraction of making cost charged when the courier lost the shipment. Default 100% — item is genuinely gone.',
       default: 1,
     },
     {
       key: 'unresolved',
       label: 'Unresolved',
       tip: 'Outcome not yet confirmed',
-      detail: 'Fraction of COGS charged for orders whose outcome is not yet known (still "Shipped" or orphan settlement legs with no status). Default 0% — conservative, don\'t charge cost until outcome confirmed.',
+      detail: 'Fraction of making cost charged for orders whose outcome is not yet known. Default 0% — conservative, don\'t charge cost until outcome confirmed.',
       default: 0,
+    },
+    {
+      key: 'packaging_loss',
+      label: 'Packaging Loss',
+      tip: 'Applies to RTOs, Returns, etc.',
+      detail: 'Fraction of packaging cost charged when an order is shipped but not successfully delivered (e.g., RTO, Return, Lost). Default 100% — assumes packaging material is consumed.',
+      default: 1,
     },
   ];
 

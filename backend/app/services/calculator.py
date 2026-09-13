@@ -113,24 +113,24 @@ def apply_cogs(
         if status in COGS_FULL_STATUSES:
             return making * qty, packaging * qty
 
+        pkg_rate = loss_rates.get("packaging_loss", 1.0)
+
         if status == "rto":
-            # RTO: product comes back resellable → only packaging lost
+            # RTO: product comes back resellable
             rate = loss_rates.get("rto", 0.0)
-            # Even at rate=0, packaging is consumed (product shipped either way)
-            # At rate>0, making cost also partially charged
-            return making * qty * rate, packaging * qty
+            return making * qty * rate, packaging * qty * pkg_rate
 
         if status == "return":
             rate = loss_rates.get("return", 1.0)
-            return making * qty * rate, packaging * qty * rate
+            return making * qty * rate, packaging * qty * pkg_rate
 
         if status == "lost":
             rate = loss_rates.get("lost", 1.0)
-            return making * qty * rate, packaging * qty * rate
+            return making * qty * rate, packaging * qty * pkg_rate
 
         # Unresolved / shipped / unknown
         rate = loss_rates.get("unresolved", 0.0)
-        return making * qty * rate, packaging * qty * rate
+        return making * qty * rate, packaging * qty * pkg_rate
 
     cogs_split = order_level.apply(_compute_cogs, axis=1, result_type="expand")
     cogs_split.columns = ["cogs_making", "cogs_packaging"]
