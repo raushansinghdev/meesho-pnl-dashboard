@@ -1,4 +1,5 @@
 import { Upload, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import KPICards from '../components/Dashboard/KPICards';
 import StatusBreakdown from '../components/Dashboard/StatusBreakdown';
 import PnLWaterfall from '../components/Dashboard/PnLWaterfall';
@@ -19,6 +20,9 @@ export default function DashboardPage({ pnlData }) {
             <p className="empty-state__subtitle">
               Go to Upload, drop your Meesho payment file, and compute your P&L.
             </p>
+            <Link to="/upload" className="btn btn--primary" style={{ marginTop: 'var(--space-4)' }}>
+              Go to Upload
+            </Link>
           </div>
         </div>
       </>
