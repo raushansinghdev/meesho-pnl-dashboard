@@ -165,11 +165,13 @@ a:hover {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .card:hover {
-  border-color: var(--border-medium);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Hero Banner ──────────────────────────────────────────────── */
@@ -289,7 +291,7 @@ a:hover {
 /* ── KPI Cards — Flat with icon ───────────────────────────────── */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr) 0.75fr;
   gap: var(--space-4);
   margin-bottom: var(--space-5);
 }
@@ -302,11 +304,13 @@ a:hover {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .kpi-card:hover {
-  border-color: var(--border-medium);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .kpi-card__icon {
@@ -317,6 +321,26 @@ a:hover {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* ── Chart Hover Interactions ────────────────────────────── */
+.chart-cell {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform-origin: center center;
+  transform-box: fill-box;
+  cursor: pointer;
+}
+
+.waterfall-bar:hover {
+  transform: scaleX(1.1) scaleY(1.03);
+  filter: brightness(1.2) drop-shadow(0 4px 10px rgba(255,255,255,0.15));
+  z-index: 10;
+}
+
+.pie-slice:hover {
+  transform: scale(1.05);
+  filter: brightness(1.15) drop-shadow(0 4px 12px rgba(255,255,255,0.15));
+  z-index: 10;
 }
 
 .kpi-card__icon--blue { background: var(--info-muted); color: var(--info); }
@@ -405,6 +429,10 @@ a:hover {
   cursor: not-allowed;
 }
 
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
 .btn--primary {
   background: var(--accent);
   color: var(--text-inverse);
@@ -412,6 +440,8 @@ a:hover {
 
 .btn--primary:hover:not(:disabled) {
   background: var(--accent-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.3);
 }
 
 .btn--secondary {
@@ -423,6 +453,8 @@ a:hover {
 .btn--secondary:hover:not(:disabled) {
   background: var(--bg-hover);
   border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 }
 
 .btn--ghost {
@@ -686,6 +718,7 @@ input[type="number"] {
 .sidebar__link:hover {
   background: var(--bg-elevated);
   color: var(--text-primary);
+  transform: translateX(4px);
 }
 
 .sidebar__link--active {
@@ -731,7 +764,7 @@ input[type="number"] {
 /* ── Grid Layouts ──────────────────────────────────────────────── */
 .grid-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 3fr 2fr;
   gap: var(--space-4);
   margin-bottom: var(--space-5);
 }
@@ -1248,3 +1281,88 @@ input[type="number"] {
   background: rgba(248, 113, 113, 0.08);
 }
 
+
+/* Modal Overlay & Content */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--surface-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: modal-pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+  color: var(--text-primary);
+  font-size: 1.125rem;
+}
+
+.modal-content p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@keyframes modal-pop {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Custom Tooltip for KPI Cards */
+.kpi-card {
+  position: relative;
+}
+
+.kpi-card__tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background-color: #1e2130;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: #e2e4ea;
+  white-space: pre-line;
+  z-index: 9999;
+  width: max-content;
+  max-width: 300px;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.kpi-card:hover .kpi-card__tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+.kpi-card:hover { z-index: 100; }

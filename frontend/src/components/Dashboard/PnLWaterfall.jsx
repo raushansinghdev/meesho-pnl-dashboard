@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   BarChart,
   Bar,
@@ -19,8 +20,36 @@ export default function PnLWaterfall({ overall }) {
 
   // Build waterfall data: each bar starts where the previous one ended
   const steps = [
-    { name: 'Settlement', value: overall.net_settlement, type: 'positive' },
-    { name: 'COGS', value: -overall.cogs, type: 'negative' },
+    { 
+      name: 'Settlement', 
+      value: overall.net_settlement, 
+      type: 'settlement',
+      detail: 'Total amount deposited by Meesho to your bank account' 
+    },
+    { 
+      name: 'COGS (Delivered)', 
+      value: -(overall.cogs_making - overall.cogs_making_lost), 
+      type: 'negative',
+      detail: 'Making cost for successfully delivered orders only.'
+    },
+    { 
+      name: 'Packaging', 
+      value: -(overall.cogs_packaging - overall.cogs_packaging_lost), 
+      type: 'negative',
+      detail: 'Packaging cost for successfully delivered orders only.'
+    },
+    { 
+      name: 'Pkg Loss (RTO)', 
+      value: -overall.cogs_packaging_lost, 
+      type: 'negative',
+      detail: `Customer Return Loss: ₹${Math.abs(overall.packaging_loss_return || 0).toLocaleString('en-IN')}\nCourier Return Loss: ₹${Math.abs(overall.packaging_loss_rto || 0).toLocaleString('en-IN')}`
+    },
+    { 
+      name: 'Return Loss', 
+      value: -overall.cogs_making_lost, 
+      type: 'negative',
+      detail: `Customer Return Loss: ₹${Math.abs(overall.making_loss_return || 0).toLocaleString('en-IN')}\nCourier Return Loss: ₹${Math.abs(overall.making_loss_rto || 0).toLocaleString('en-IN')}\n\nReverse Shipping Penalty: ₹${Math.abs(overall.return_shipping_charge || 0).toLocaleString('en-IN')} (Already deducted from Settlement)`
+    },
     { name: 'Ads', value: overall.ads_cost, type: 'negative' },
     { name: 'Referral', value: overall.referral_income, type: overall.referral_income >= 0 ? 'positive' : 'negative' },
     { name: 'Comp/Rcv', value: overall.compensation_recovery, type: overall.compensation_recovery >= 0 ? 'positive' : 'negative' },
@@ -47,8 +76,9 @@ export default function PnLWaterfall({ overall }) {
       name: step.name,
       value: Math.abs(barValue),
       base: barValue >= 0 ? base : base + barValue,
-      barFill: barValue >= 0 ? '#10b981' : '#f43f5e',
+      barFill: step.type === 'settlement' ? '#f59e0b' : (barValue >= 0 ? '#10b981' : '#f43f5e'),
       rawValue: barValue,
+      detail: step.detail
     };
   });
 
@@ -58,34 +88,48 @@ export default function PnLWaterfall({ overall }) {
     const val = item.rawValue !== undefined ? item.rawValue : item.value;
     return (
       <div style={{
-        background: 'var(--bg-elevated)',
-        border: '1px solid var(--border-medium)',
+        backgroundColor: '#1e2130',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
         borderRadius: 'var(--radius-md)',
         padding: 'var(--space-3) var(--space-4)',
         fontSize: 'var(--text-sm)',
+        lineHeight: 1.5,
+        color: '#e2e4ea',
+        whiteSpace: 'pre-line',
+        maxWidth: 220,
+        boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(12px)',
       }}>
-        <div style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-1)' }}>{item.name}</div>
+        <div style={{ color: '#e2e4ea', marginBottom: 'var(--space-1)' }}>{item.name}</div>
         <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: val >= 0 ? 'var(--success)' : 'var(--danger)' }}>
           {val >= 0 ? '+' : '−'}₹{Math.abs(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
         </div>
+        {item.detail && (
+          <div style={{ marginTop: 'var(--space-2)', fontSize: '0.8rem', color: '#9aa0b0', whiteSpace: 'pre-line' }}>
+            {item.detail}
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="glass-card animate-in animate-in-delay-3">
+    <div className="card animate-in animate-in-delay-4">
       <div className="section-title">
         <span>P&L Waterfall</span>
       </div>
-      <div style={{ width: '100%', height: 320 }}>
+      <div style={{ width: '100%', height: 400 }}>
         <ResponsiveContainer>
-          <BarChart data={data} margin={{ top: 10, right: 20, bottom: 5, left: 20 }}>
+          <BarChart data={data} margin={{ top: 20, right: 20, bottom: 50, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
             <XAxis
               dataKey="name"
-              tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+              tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
               axisLine={{ stroke: 'var(--border-subtle)' }}
               tickLine={false}
+              interval={0}
+              angle={-35}
+              textAnchor="end"
             />
             <YAxis
               tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontFamily: 'var(--font-mono)' }}
@@ -100,7 +144,13 @@ export default function PnLWaterfall({ overall }) {
             <Bar dataKey="base" stackId="stack" fill="transparent" />
             <Bar dataKey="value" stackId="stack" radius={[4, 4, 0, 0]}>
               {data.map((entry, index) => (
-                <Cell key={index} fill={entry.barFill} fillOpacity={0.85} />
+                <Cell 
+                  key={index} 
+                  fill={entry.barFill} 
+                  fillOpacity={1}
+                  className="chart-cell waterfall-bar"
+                  stroke="none"
+                />
               ))}
             </Bar>
           </BarChart>

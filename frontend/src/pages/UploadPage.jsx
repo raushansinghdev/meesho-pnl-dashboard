@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Upload, Play, Loader, CheckCircle, ArrowRight } from 'lucide-react';
 import FileUpload from '../components/Upload/FileUpload';
 import LossRates from '../components/Settings/LossRates';
-import { computePnL } from '../api/client';
+import { computePnL, getCurrentPaymentFileMeta } from '../api/client';
+import { loadCosts } from '../services/skuCosts';
 import { useNavigate } from 'react-router-dom';
 
 export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
-  const [paymentFileId, setPaymentFileId] = useState(null);
+  const [paymentFileId, setPaymentFileId] = useState(() => getCurrentPaymentFileMeta()?.file_id || null);
   const [ordersFileId, setOrdersFileId] = useState(null);
   const [computing, setComputing] = useState(false);
   const [error, setError] = useState(null);
@@ -48,7 +49,12 @@ export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
         <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
           <div className="section-title" style={{ marginBottom: 'var(--space-4)' }}>Upload Files</div>
           <FileUpload
-            onPaymentUploaded={(meta) => setPaymentFileId(meta.file_id)}
+            onPaymentUploaded={(meta) => {
+              setPaymentFileId(meta.file_id);
+              if (meta.has_missing_costs) {
+                navigate('/sku-costs');
+              }
+            }}
             onOrdersUploaded={(meta) => setOrdersFileId(meta.file_id)}
           />
         </div>

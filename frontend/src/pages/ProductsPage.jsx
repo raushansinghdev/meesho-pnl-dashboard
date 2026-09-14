@@ -139,7 +139,7 @@ export default function ProductsPage({ pnlData }) {
                   </div>
                   <div className="product-stat">
                     <span className="product-stat__value">{rto}</span>
-                    <span className="product-stat__label">RTO</span>
+                    <span className="product-stat__label">Courier Return</span>
                   </div>
                   <div className="product-stat">
                     <span className="product-stat__value">{returnOrders}</span>
@@ -167,7 +167,7 @@ export default function ProductsPage({ pnlData }) {
                   </div>
                   {rtoCost > 0 && (
                     <div className="product-fin-row">
-                      <span>RTO Cost</span>
+                      <span>Courier Return Cost</span>
                       <span className="product-fin-row__val product-fin-row__val--danger">{fmt(rtoCost)}</span>
                     </div>
                   )}

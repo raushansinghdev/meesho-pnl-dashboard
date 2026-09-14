@@ -38,8 +38,8 @@ export default function SettingsPage({ lossRates, onChange }) {
               and a <strong style={{ color: 'var(--text-primary)' }}>packaging cost</strong> (packaging materials used for shipping).
             </p>
             <p style={{ marginBottom: 'var(--space-3)' }}>
-              <strong style={{ color: 'var(--accent)' }}>RTO orders</strong> always charge packaging cost (the packaging is consumed
-              regardless), but making cost is only charged at the RTO loss rate above (default 0% — product assumed resellable).
+              <strong style={{ color: 'var(--accent)' }}>Courier Return orders</strong> always charge packaging cost (the packaging is consumed
+              regardless), but making cost is only charged at the Courier Return loss rate above (default 0% — product assumed resellable).
             </p>
             <p>
               <strong style={{ color: 'var(--text-primary)' }}>Revenue and ads figures are bank-verified</strong> (proven to match

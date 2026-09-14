@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Save, Upload, Download, Search, AlertTriangle } from 'lucide-react';
-import { listSKUCosts, bulkUpdateCosts, importCosts, exportCosts } from '../../api/client';
+import { listSKUCosts, bulkUpdateCosts, importCostsFromExcel, exportCostsToExcel, getCurrentPaymentFileMeta } from '../../api/client';
+import * as XLSX from 'xlsx';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 /**
  * CostEditor — Inline-editable table for SKU costs (v2 making + packaging split).
@@ -12,11 +15,20 @@ export default function CostEditor() {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [message, setMessage] = useState(null);
+  const [showExportPrompt, setShowExportPrompt] = useState(false);
 
   const loadCosts = async () => {
     setLoading(true);
     try {
       const data = await listSKUCosts();
+      
+      data.sort((a, b) => {
+        const aZero = (a.making_cost === 0 && a.packaging_cost === 0) ? 1 : 0;
+        const bZero = (b.making_cost === 0 && b.packaging_cost === 0) ? 1 : 0;
+        if (aZero !== bZero) return bZero - aZero;
+        return a.sku.localeCompare(b.sku);
+      });
+      
       setCosts(data);
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -29,9 +41,14 @@ export default function CostEditor() {
 
   const handleChange = (sku, field, value) => {
     setCosts(prev =>
-      prev.map(c =>
-        c.sku === sku ? { ...c, [field]: parseFloat(value) || 0 } : c
-      )
+      prev.map(c => {
+        if (c.sku === sku) {
+          const updated = { ...c, [field]: parseFloat(value) || 0 };
+          updated.total_cost = updated.making_cost + updated.packaging_cost;
+          return updated;
+        }
+        return c;
+      })
     );
     setDirty(true);
   };
@@ -49,6 +66,10 @@ export default function CostEditor() {
       });
       await bulkUpdateCosts(costMap);
       setDirty(false);
+      
+      // Show custom export prompt modal
+      setShowExportPrompt(true);
+      
       setMessage({ type: 'success', text: `${costs.length} SKU costs saved successfully.` });
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -61,24 +82,20 @@ export default function CostEditor() {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      await importCosts(file);
+      await importCostsFromExcel(file);
       await loadCosts();
-      setMessage({ type: 'success', text: 'Costs imported successfully.' });
+      setMessage({ type: 'success', text: 'Costs imported successfully from Excel.' });
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
+    } finally {
+      e.target.value = null; // reset input
     }
   };
 
   const handleExport = async () => {
     try {
-      const data = await exportCosts();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'sku_costs.json';
-      a.click();
-      URL.revokeObjectURL(url);
+      const workbook = await exportCostsToExcel();
+      XLSX.writeFile(workbook, 'sku_costs.xlsx');
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
     }
@@ -122,14 +139,19 @@ export default function CostEditor() {
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          {getCurrentPaymentFileMeta() && (
+            <Link to="/upload" className="btn btn--ghost btn--sm" style={{ color: 'var(--accent)' }}>
+              <ArrowLeft size={14} /> Return to Upload & Compute
+            </Link>
+          )}
           <label className="btn btn--secondary btn--sm" style={{ cursor: 'pointer' }}>
             <Upload size={14} />
-            Import JSON
-            <input type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
+            Import Excel
+            <input type="file" accept=".xlsx,.xls" onChange={handleImport} style={{ display: 'none' }} />
           </label>
           <button className="btn btn--secondary btn--sm" onClick={handleExport}>
             <Download size={14} />
-            Export JSON
+            Export Excel
           </button>
           <button
             className="btn btn--primary btn--sm"
@@ -145,12 +167,13 @@ export default function CostEditor() {
       {/* Message */}
       {message && (
         <div style={{
-          padding: 'var(--space-3) var(--space-4)',
-          borderRadius: 'var(--radius-md)',
-          marginBottom: 'var(--space-4)',
+          display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+          color: message.type === 'error' ? 'var(--danger)' : 'var(--success)',
           fontSize: 'var(--text-sm)',
-          background: message.type === 'success' ? 'var(--success-muted)' : 'var(--danger-muted)',
-          color: message.type === 'success' ? 'var(--success)' : 'var(--danger)',
+          background: message.type === 'error' ? 'var(--danger-muted)' : 'var(--success-muted)',
+          padding: 'var(--space-1) var(--space-2)',
+          borderRadius: 'var(--radius-sm)',
+          marginBottom: 'var(--space-4)'
         }}>
           {message.text}
         </div>
@@ -220,6 +243,33 @@ export default function CostEditor() {
           </table>
         </div>
       </div>
+      {showExportPrompt && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Keep a Backup?</h3>
+            <p>Your SKU costs have been successfully saved to your browser. Would you like to export them to an Excel file to keep a secure backup?</p>
+            <div className="modal-actions">
+              <button 
+                className="btn btn--secondary" 
+                onClick={() => setShowExportPrompt(false)}
+              >
+                No Thanks
+              </button>
+              <button 
+                className="btn btn--primary" 
+                onClick={() => {
+                  handleExport();
+                  setShowExportPrompt(false);
+                }}
+              >
+                <Download size={14} style={{ marginRight: '6px' }} />
+                Export to Excel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

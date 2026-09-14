@@ -1,136 +1,140 @@
-/**
- * API client for the Meesho P&L backend.
- *
- * All endpoints are proxied through nginx in production (/api/...).
- * In dev, Vite's proxy handles it (see vite.config.js).
- */
+import { readExcelFile, parseOrdersCsv, parseCostsExcel, generateCostsExcel, extractUniqueSkus } from "../services/parser";
+import { computePnl as computePnlService } from "../services/calculator";
+import {
+  loadCosts,
+  updateSingleSku,
+  saveCosts
+} from "../services/skuCosts";
 
-const API_BASE = '/api';
-
-async function request(path, options = {}) {
-  const url = `${API_BASE}${path}`;
-  const res = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || `Request failed: ${res.status}`);
-  }
-
-  return res.json();
-}
+// Memory storage for uploaded files during the session
+let currentWorkbook = null;
+let currentOrdersDf = null;
+let lastResult = null;
 
 // ── Upload ──────────────────────────────────────────────────────
 
 export async function uploadPaymentFile(file) {
-  const form = new FormData();
-  form.append('file', file);
-
-  const res = await fetch(`${API_BASE}/upload/payment-file`, {
-    method: 'POST',
-    body: form,
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || 'Upload failed');
+  currentWorkbook = await readExcelFile(file);
+  
+  // Cross-reference extracted SKUs with known costs
+  const skusInFile = extractUniqueSkus(currentWorkbook);
+  const currentCosts = loadCosts();
+  let hasMissingCosts = false;
+  
+  for (const sku of skusInFile) {
+    if (currentCosts[sku] === undefined) {
+      // Add missing SKU with 0 cost
+      currentCosts[sku] = { making_cost: 0, packaging_cost: 0 };
+      hasMissingCosts = true;
+    }
   }
 
-  return res.json();
+  if (hasMissingCosts) {
+    saveCosts(currentCosts);
+  }
+
+  return {
+    file_name: file.name,
+    file_id: "memory",
+    has_missing_costs: hasMissingCosts
+  };
+}
+
+export function getCurrentPaymentFileMeta() {
+  if (currentWorkbook) {
+    return { file_id: "memory" };
+  }
+  return null;
 }
 
 export async function uploadOrdersFile(file) {
-  const form = new FormData();
-  form.append('file', file);
-
-  const res = await fetch(`${API_BASE}/upload/orders-file`, {
-    method: 'POST',
-    body: form,
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || 'Upload failed');
-  }
-
-  return res.json();
+  currentOrdersDf = await parseOrdersCsv(file);
+  return {
+    success: true,
+    file_id: "memory"
+  };
 }
 
 // ── P&L ─────────────────────────────────────────────────────────
 
 export async function computePnL(paymentFileId, ordersFileId = null, lossRates = {}) {
-  return request('/pnl/compute', {
-    method: 'POST',
-    body: JSON.stringify({
-      payment_file_id: paymentFileId,
-      orders_file_id: ordersFileId,
-      loss_rates: {
-        rto: lossRates.rto ?? 0.0,
-        return_rate: lossRates.returnRate ?? 1.0,
-        lost: lossRates.lost ?? 1.0,
-        unresolved: lossRates.unresolved ?? 0.0,
-      },
-    }),
-  });
+  if (!currentWorkbook) {
+    throw new Error("Payment file missing. Please upload it first.");
+  }
+  
+  const lossRatesReq = {
+    rto: lossRates.rto ?? 0.0,
+    return_rate: lossRates.returnRate ?? 1.0,
+    lost: lossRates.lost ?? 1.0,
+    unresolved: lossRates.unresolved ?? 0.0,
+    rto_packaging_loss: lossRates.rto_packaging_loss ?? 1.0,
+    return_packaging_loss: lossRates.return_packaging_loss ?? 1.0,
+  };
+
+  const result = await computePnlService(currentWorkbook, currentOrdersDf, lossRatesReq);
+  lastResult = result;
+  return result;
 }
 
 export async function getResults(resultId) {
-  return request(`/pnl/results/${resultId}`);
+  if (lastResult) return lastResult;
+  throw new Error("Results not found.");
 }
 
 // ── SKU Costs ───────────────────────────────────────────────────
 
 export async function listSKUCosts() {
-  return request('/sku/costs');
+  const costs = loadCosts();
+  return Object.entries(costs).map(([sku, vals]) => {
+    if (!vals) return { sku, making_cost: 0, packaging_cost: 0, total_cost: 0 };
+    return {
+      sku,
+      making_cost: vals.making_cost,
+      packaging_cost: vals.packaging_cost,
+      total_cost: vals.making_cost + vals.packaging_cost
+    };
+  });
 }
 
 export async function bulkUpdateCosts(costs) {
-  return request('/sku/costs', {
-    method: 'PUT',
-    body: JSON.stringify({ costs }),
-  });
+  saveCosts(costs);
+  return { success: true };
 }
 
 export async function updateSingleCost(sku, makingCost, packagingCost) {
-  return request(`/sku/costs/${encodeURIComponent(sku)}`, {
-    method: 'PUT',
-    body: JSON.stringify({
-      making_cost: makingCost,
-      packaging_cost: packagingCost,
-    }),
-  });
+  updateSingleSku(sku, makingCost, packagingCost);
+  return { success: true };
 }
 
-export async function importCosts(file) {
-  const form = new FormData();
-  form.append('file', file);
+export async function importCostsFromExcel(file) {
+  try {
+    const workbook = await readExcelFile(file);
+    const importedCosts = parseCostsExcel(workbook);
+    
+    if (Object.keys(importedCosts).length === 0) {
+      throw new Error("Invalid SKU Costs file: Missing required columns (SKU CODE, MAKING COST, PACKAGING COST).");
+    }
 
-  const res = await fetch(`${API_BASE}/sku/costs/import`, {
-    method: 'POST',
-    body: form,
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || 'Import failed');
+    const currentCosts = loadCosts();
+    
+    for (const [sku, cost] of Object.entries(importedCosts)) {
+      currentCosts[sku] = cost;
+    }
+    
+    saveCosts(currentCosts);
+    return { success: true, count: Object.keys(importedCosts).length };
+  } catch (err) {
+    throw new Error("Failed to parse Excel file: " + err.message);
   }
-
-  return res.json();
 }
 
-export async function exportCosts() {
-  const res = await fetch(`${API_BASE}/sku/costs/export`);
-  if (!res.ok) throw new Error('Export failed');
-  return res.json();
+export async function exportCostsToExcel() {
+  const costs = loadCosts();
+  return generateCostsExcel(costs); // Returns a SheetJS workbook
 }
 
 // ── Health ──────────────────────────────────────────────────────
 
 export async function healthCheck() {
-  return request('/health');
+  return { status: "ok", mode: "frontend-only" };
 }

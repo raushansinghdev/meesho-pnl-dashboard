@@ -8,7 +8,7 @@ export default function LossRates({ lossRates, onChange }) {
   const fields = [
     {
       key: 'rto',
-      label: 'RTO Making Cost',
+      label: 'Courier Return Making Cost',
       tip: 'Item returns to inventory',
       detail: 'Fraction of making cost charged when the buyer never accepted delivery. Default 0% — assumes item returns to inventory resellable.',
       default: 0,
@@ -36,9 +36,9 @@ export default function LossRates({ lossRates, onChange }) {
     },
     {
       key: 'rto_packaging_loss',
-      label: 'RTO Packaging Loss',
-      tip: 'Packaging lost on RTOs',
-      detail: 'Fraction of packaging cost charged when an order is returned to origin (RTO). Default 100% — assumes packaging material is consumed.',
+      label: 'Courier Return Packaging Loss',
+      tip: 'Packaging lost on Courier Returns',
+      detail: 'Fraction of packaging cost charged when an order is returned to origin (Courier Return). Default 100% — assumes packaging material is consumed.',
       default: 1,
     },
     {

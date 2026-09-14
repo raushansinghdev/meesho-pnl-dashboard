@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import DashboardPage from './pages/DashboardPage';
 import UploadPage from './pages/UploadPage';
@@ -13,6 +13,8 @@ import ProductsPage from './pages/ProductsPage';
  * Global state is lifted here (not in a store) because the app is simple:
  * - pnlData: the latest computed P&L result
  * - lossRates: current loss-rate settings
+ *
+ * Uses HashRouter for static hosting compatibility (e.g. GitHub Pages).
  */
 export default function App() {
   const [pnlData, setPnlData] = useState(null);
@@ -24,7 +26,7 @@ export default function App() {
   });
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Layout>
         <Routes>
           <Route path="/" element={<DashboardPage pnlData={pnlData} />} />
@@ -46,6 +48,7 @@ export default function App() {
           />
         </Routes>
       </Layout>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
+

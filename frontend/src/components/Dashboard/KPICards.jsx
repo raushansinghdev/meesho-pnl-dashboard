@@ -7,9 +7,6 @@ import { Landmark, Package, RotateCcw, Box } from 'lucide-react';
 export default function KPICards({ overall, status_breakdown }) {
   if (!overall) return null;
 
-  const rtoReturnCost = (overall.cogs_making || 0) > 0
-    ? Math.round(((overall.cogs || 0) - (overall.cogs_making || 0)) * 100) / 100
-    : 0;
 
   let rtoCount = 0;
   let returnCount = 0;
@@ -27,27 +24,39 @@ export default function KPICards({ overall, status_breakdown }) {
       subtitle: 'From Meesho',
       icon: Landmark,
       iconClass: 'kpi-card__icon--blue',
+      tooltip: 'Total settlement amount transferred from Meesho.'
     },
     {
-      label: 'ITEM COST',
-      value: overall.cogs,
-      subtitle: 'Cost of goods',
+      label: 'PRODUCT COST',
+      value: overall.cogs_making,
+      subtitle: 'Total making cost',
       icon: Package,
       iconClass: 'kpi-card__icon--red',
+      tooltip: 'Total amount spent on making or procuring the items (excluding packaging).'
     },
     {
-      label: 'RTO / RETURN',
-      value: rtoReturnCost,
-      subtitle: `${rtoCount} RTO, ${returnCount} Return`,
-      icon: RotateCcw,
-      iconClass: 'kpi-card__icon--yellow',
-    },
-    {
-      label: 'PACKAGING',
-      value: overall.cogs_packaging || 0,
-      subtitle: 'Total cost',
+      label: 'ADS COST',
+      value: overall.ads_cost || 0,
+      subtitle: 'Total ad spend',
       icon: Box,
       iconClass: 'kpi-card__icon--purple',
+      tooltip: 'Total amount spent on Meesho advertisements.'
+    },
+    {
+      label: 'RETURN LOSS',
+      value: (overall.cogs_making_lost || 0) + (overall.cogs_packaging_lost || 0),
+      subtitle: <>{rtoCount} Courier Return<br />{returnCount} Customer Return</>,
+      icon: RotateCcw,
+      iconClass: 'kpi-card__icon--yellow',
+      tooltip: `Total product and packaging cost lost on undelivered or returned items.\n\nCustomer Return Loss: ₹${Math.abs((overall.making_loss_return || 0) + (overall.packaging_loss_return || 0)).toLocaleString('en-IN')}\nCourier Return Loss: ₹${Math.abs((overall.making_loss_rto || 0) + (overall.packaging_loss_rto || 0)).toLocaleString('en-IN')}`
+    },
+    {
+      label: 'PENALTY',
+      value: Math.abs(overall.return_shipping_charge || 0),
+      subtitle: 'Reverse shipping',
+      icon: RotateCcw,
+      iconClass: 'kpi-card__icon--red',
+      tooltip: `Total penalty charged for customer returns.\n\nReverse Shipping Penalty: ₹${Math.abs(overall.return_shipping_charge || 0).toLocaleString('en-IN')}\n(Already deducted from Settlement by Meesho)`
     },
   ];
 
@@ -59,6 +68,7 @@ export default function KPICards({ overall, status_breakdown }) {
         const Icon = card.icon;
         return (
           <div key={card.label} className={`kpi-card animate-in animate-in-delay-${idx + 1}`}>
+            <div className="kpi-card__tooltip">{card.tooltip}</div>
             <div className={`kpi-card__icon ${card.iconClass}`}>
               <Icon size={20} />
             </div>

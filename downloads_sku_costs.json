@@ -1,0 +1,222 @@
+{
+  "BQ_RS_001": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "BQ_RS_01": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "BQ_RS_03": {
+    "making_cost": 150,
+    "packaging_cost": 0
+  },
+  "BQ_SF+TLP_01": {
+    "making_cost": 95,
+    "packaging_cost": 0
+  },
+  "BQ_SF_001": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "BQ_SF_01": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "BQ_SF_02": {
+    "making_cost": 100,
+    "packaging_cost": 0
+  },
+  "BQ_SF_1": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "BQ_SF_2": {
+    "making_cost": 100,
+    "packaging_cost": 0
+  },
+  "BQ_SF_2_Daisy_1": {
+    "making_cost": 140,
+    "packaging_cost": 0
+  },
+  "BQ_SF_Combo_02": {
+    "making_cost": 100,
+    "packaging_cost": 0
+  },
+  "BQ_SF_Combo_2": {
+    "making_cost": 100,
+    "packaging_cost": 0
+  },
+  "BQ_TLP_001": {
+    "making_cost": 55,
+    "packaging_cost": 0
+  },
+  "BQ_TLP_01": {
+    "making_cost": 55,
+    "packaging_cost": 0
+  },
+  "BQ_TLP_Pink_2_Lvndr_1": {
+    "making_cost": 135,
+    "packaging_cost": 0
+  },
+  "Bq_Rs_Red_02": {
+    "making_cost": 100,
+    "packaging_cost": 0
+  },
+  "HB_MIX_002": {
+    "making_cost": 80,
+    "packaging_cost": 0
+  },
+  "HB_MIX_02": {
+    "making_cost": 80,
+    "packaging_cost": 0
+  },
+  "HC_MIX_02": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "HC_MIX_04": {
+    "making_cost": 70,
+    "packaging_cost": 0
+  },
+  "HC_TriClr_02": {
+    "making_cost": 40,
+    "packaging_cost": 0
+  },
+  "HairPin_Mix_05": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "HairPin_Mix_10": {
+    "making_cost": 100,
+    "packaging_cost": 0
+  },
+  "KC_BEE_02": {
+    "making_cost": 85,
+    "packaging_cost": 0
+  },
+  "KC_CHK+BEE_01": {
+    "making_cost": 90,
+    "packaging_cost": 0
+  },
+  "KC_CHK_02": {
+    "making_cost": 95,
+    "packaging_cost": 0
+  },
+  "KC_CHK_1": {
+    "making_cost": 55,
+    "packaging_cost": 0
+  },
+  "KC_FL_03": {
+    "making_cost": 70,
+    "packaging_cost": 0
+  },
+  "KC_OCTPS_02": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "KC_Octp_Red+Blue_02": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "KC_Octp_Red+Blue_2": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "KC_SF_1_DSY_01": {
+    "making_cost": 100,
+    "packaging_cost": 0
+  },
+  "Pot_SF_01": {
+    "making_cost": 80,
+    "packaging_cost": 0
+  },
+  "Pot_SF_1": {
+    "making_cost": 80,
+    "packaging_cost": 0
+  },
+  "Rib_gold_02": {
+    "making_cost": 85,
+    "packaging_cost": 0
+  },
+  "Rib_gold_2": {
+    "making_cost": 85,
+    "packaging_cost": 0
+  },
+  "SET_SF": {
+    "making_cost": 110,
+    "packaging_cost": 0
+  },
+  "Safety_Eyes_100": {
+    "making_cost": 40,
+    "packaging_cost": 0
+  },
+  "Safety_Eyes_50": {
+    "making_cost": 20,
+    "packaging_cost": 0
+  },
+  "Safety_Eyes_500": {
+    "making_cost": 160,
+    "packaging_cost": 0
+  },
+  "bq_rs_1": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "clutcher_mix_002": {
+    "making_cost": 65,
+    "packaging_cost": 0
+  },
+  "clutcher_mix_02": {
+    "making_cost": 65,
+    "packaging_cost": 0
+  },
+  "eyes_100": {
+    "making_cost": 40,
+    "packaging_cost": 0
+  },
+  "eyes_50": {
+    "making_cost": 25,
+    "packaging_cost": 0
+  },
+  "hp_mix_03": {
+    "making_cost": 40,
+    "packaging_cost": 0
+  },
+  "kc_bee_2": {
+    "making_cost": 85,
+    "packaging_cost": 0
+  },
+  "kc_chk+bee_1": {
+    "making_cost": 95,
+    "packaging_cost": 0
+  },
+  "kc_chk_2": {
+    "making_cost": 95,
+    "packaging_cost": 0
+  },
+  "kc_fl_02": {
+    "making_cost": 50,
+    "packaging_cost": 0
+  },
+  "kc_hook_030": {
+    "making_cost": 50,
+    "packaging_cost": 0
+  },
+  "kc_hook_050": {
+    "making_cost": 80,
+    "packaging_cost": 0
+  },
+  "kc_hook_50": {
+    "making_cost": 80,
+    "packaging_cost": 0
+  },
+  "lily_bag_charm_02": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  },
+  "lily_bag_charm_2": {
+    "making_cost": 60,
+    "packaging_cost": 0
+  }
+}

@@ -1,9 +1,0 @@
-__pycache__
-*.pyc
-.venv
-venv
-.git
-.DS_Store
-data/uploads/*
-data/results/*
-tests/

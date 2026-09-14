@@ -101,8 +101,8 @@ export default function DashboardPage({ pnlData }) {
 
         {/* ── Two Donut Charts ─────────────────────────────── */}
         <div className="grid-2">
-          <StatusBreakdown breakdown={status_breakdown} />
           <PnLWaterfall overall={overall} />
+          <StatusBreakdown breakdown={status_breakdown} />
         </div>
 
         {/* ── Product-wise P&L Table ───────────────────────── */}

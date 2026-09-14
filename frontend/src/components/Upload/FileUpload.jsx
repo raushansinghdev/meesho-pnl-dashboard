@@ -1,16 +1,18 @@
 import { useState, useCallback } from 'react';
 import { Upload, FileSpreadsheet, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import { uploadPaymentFile, uploadOrdersFile } from '../../api/client';
+import { uploadPaymentFile, uploadOrdersFile, importCostsFromExcel, exportCostsToExcel, getCurrentPaymentFileMeta } from '../../api/client';
+import * as XLSX from 'xlsx';
 
 /**
- * FileUpload — Drag-and-drop upload for payment file (.xlsx) and orders CSV.
+ * FileUpload — Compact drag-and-drop upload for payment file (.xlsx) and orders CSV.
  */
-export default function FileUpload({ onPaymentUploaded, onOrdersUploaded }) {
-  const [paymentStatus, setPaymentStatus] = useState(null); // null | 'uploading' | 'success' | 'error'
+export default function FileUpload({ onPaymentUploaded, onOrdersUploaded, onCostsUploaded }) {
+  const existingMeta = getCurrentPaymentFileMeta();
+  const [paymentStatus, setPaymentStatus] = useState(existingMeta ? 'success' : null);
   const [ordersStatus, setOrdersStatus] = useState(null);
-  const [paymentMeta, setPaymentMeta] = useState(null);
+  const [paymentMeta, setPaymentMeta] = useState(existingMeta);
   const [error, setError] = useState(null);
-  const [dragActive, setDragActive] = useState(null); // 'payment' | 'orders' | null
+  const [dragActive, setDragActive] = useState(null);
 
   const handlePaymentUpload = useCallback(async (file) => {
     setPaymentStatus('uploading');
@@ -45,121 +47,105 @@ export default function FileUpload({ onPaymentUploaded, onOrdersUploaded }) {
     const file = e.dataTransfer.files[0];
     if (!file) return;
     if (type === 'payment') handlePaymentUpload(file);
-    else handleOrdersUpload(file);
+    else if (type === 'orders') handleOrdersUpload(file);
+    else handleCostsUpload(file);
   };
 
   const handleFileInput = (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
     if (type === 'payment') handlePaymentUpload(file);
-    else handleOrdersUpload(file);
+    else if (type === 'orders') handleOrdersUpload(file);
+    else handleCostsUpload(file);
+  };
+
+  const renderZone = (type, status, meta) => {
+    const isPayment = type === 'payment';
+    const Icon = isPayment ? FileSpreadsheet : FileText;
+
+    return (
+      <label
+        className={`upload-zone ${dragActive === type ? 'upload-zone--active' : ''}`}
+        onDragOver={(e) => { e.preventDefault(); setDragActive(type); }}
+        onDragLeave={() => setDragActive(null)}
+        onDrop={(e) => handleDrop(e, type)}
+      >
+        <input
+          type="file"
+          accept={isPayment ? '.xlsx,.xls' : '.csv'}
+          style={{ display: 'none' }}
+          onChange={(e) => handleFileInput(e, type)}
+        />
+
+        {status === 'uploading' ? (
+          <>
+            <Loader size={24} className="upload-zone__icon" style={{ animation: 'spin 1s linear infinite' }} />
+            <div className="upload-zone__title">Processing...</div>
+          </>
+        ) : status === 'success' ? (
+          <>
+            <CheckCircle size={24} style={{ color: 'var(--success)', marginBottom: 'var(--space-2)' }} />
+            <div className="upload-zone__title" style={{ color: 'var(--success)' }}>
+              {isPayment ? 'Uploaded' : 'Uploaded'}
+            </div>
+            {isPayment && meta && (
+              <div className="upload-zone__subtitle">
+                {meta.file_name ? meta.file_name : 'File parsed successfully'}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <Upload size={24} className="upload-zone__icon" />
+            <div className="upload-zone__title">
+              {type === 'payment' ? 'Drop payment file' : type === 'orders' ? 'Drop orders CSV' : 'Drop costs Excel'}
+            </div>
+            <div className="upload-zone__subtitle">
+              {type === 'payment' ? '*_PAYMENT_FILE_*.xlsx' : type === 'orders' ? 'Orders_*.csv (optional)' : 'sku_costs.xlsx'}
+            </div>
+          </>
+        )}
+      </label>
+    );
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>
-      {/* Payment File Upload */}
-      <div>
-        <div style={{ marginBottom: 'var(--space-3)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <FileSpreadsheet size={16} style={{ color: 'var(--accent)' }} />
-          <span style={{ fontWeight: 600 }}>Payment File</span>
-          <span className="badge badge--info">Required</span>
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--space-4)' }}>
+        {/* Payment */}
+        <div>
+          <div style={{ marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <FileSpreadsheet size={14} style={{ color: 'var(--accent)' }} />
+            <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Payment File</span>
+            <span className="badge badge--verified" style={{ fontSize: '0.65rem' }}>Required</span>
+          </div>
+          {renderZone('payment', paymentStatus, paymentMeta)}
         </div>
 
-        <label
-          className={`upload-zone ${dragActive === 'payment' ? 'upload-zone--active' : ''}`}
-          onDragOver={(e) => { e.preventDefault(); setDragActive('payment'); }}
-          onDragLeave={() => setDragActive(null)}
-          onDrop={(e) => handleDrop(e, 'payment')}
-        >
-          <input
-            type="file"
-            accept=".xlsx,.xls"
-            style={{ display: 'none' }}
-            onChange={(e) => handleFileInput(e, 'payment')}
-          />
-
-          {paymentStatus === 'uploading' ? (
-            <>
-              <Loader size={32} className="upload-zone__icon" style={{ animation: 'spin 1s linear infinite' }} />
-              <div className="upload-zone__title">Uploading & parsing...</div>
-            </>
-          ) : paymentStatus === 'success' ? (
-            <>
-              <CheckCircle size={32} style={{ color: 'var(--success)', marginBottom: 'var(--space-4)' }} />
-              <div className="upload-zone__title" style={{ color: 'var(--success)' }}>Uploaded Successfully</div>
-              <div className="upload-zone__subtitle">
-                {paymentMeta?.payment_window_start} → {paymentMeta?.payment_window_end} · {paymentMeta?.order_count} orders
-              </div>
-            </>
-          ) : (
-            <>
-              <Upload size={32} className="upload-zone__icon" />
-              <div className="upload-zone__title">Drop payment file here</div>
-              <div className="upload-zone__subtitle">
-                Meesho *_PAYMENT_FILE_*.xlsx — the source of truth for P&L
-              </div>
-            </>
-          )}
-        </label>
-      </div>
-
-      {/* Orders CSV Upload */}
-      <div>
-        <div style={{ marginBottom: 'var(--space-3)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <FileText size={16} style={{ color: 'var(--text-secondary)' }} />
-          <span style={{ fontWeight: 600 }}>Orders CSV</span>
-          <span className="badge badge--estimated">Optional</span>
+        {/* Orders */}
+        <div>
+          <div style={{ marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <FileText size={14} style={{ color: 'var(--text-tertiary)' }} />
+            <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Orders CSV</span>
+            <span className="badge badge--estimated" style={{ fontSize: '0.65rem' }}>Optional</span>
+          </div>
+          {renderZone('orders', ordersStatus, null)}
         </div>
-
-        <label
-          className={`upload-zone ${dragActive === 'orders' ? 'upload-zone--active' : ''}`}
-          onDragOver={(e) => { e.preventDefault(); setDragActive('orders'); }}
-          onDragLeave={() => setDragActive(null)}
-          onDrop={(e) => handleDrop(e, 'orders')}
-        >
-          <input
-            type="file"
-            accept=".csv"
-            style={{ display: 'none' }}
-            onChange={(e) => handleFileInput(e, 'orders')}
-          />
-
-          {ordersStatus === 'uploading' ? (
-            <>
-              <Loader size={32} className="upload-zone__icon" style={{ animation: 'spin 1s linear infinite' }} />
-              <div className="upload-zone__title">Uploading...</div>
-            </>
-          ) : ordersStatus === 'success' ? (
-            <>
-              <CheckCircle size={32} style={{ color: 'var(--success)', marginBottom: 'var(--space-4)' }} />
-              <div className="upload-zone__title" style={{ color: 'var(--success)' }}>Uploaded</div>
-              <div className="upload-zone__subtitle">Pending orders will be shown on the dashboard</div>
-            </>
-          ) : (
-            <>
-              <Upload size={32} className="upload-zone__icon" />
-              <div className="upload-zone__title">Drop orders CSV here</div>
-              <div className="upload-zone__subtitle">
-                Meesho Orders_*.csv — only for pending-order visibility, not P&L
-              </div>
-            </>
-          )}
-        </label>
       </div>
 
       {error && (
         <div style={{
-          gridColumn: '1 / -1',
           display: 'flex',
           alignItems: 'center',
-          gap: 'var(--space-3)',
-          padding: 'var(--space-4)',
+          gap: 'var(--space-2)',
+          padding: 'var(--space-2) var(--space-3)',
           background: 'var(--danger-muted)',
-          borderRadius: 'var(--radius-lg)',
+          borderRadius: 'var(--radius-md)',
           color: 'var(--danger)',
           fontSize: 'var(--text-sm)',
+          marginTop: 'var(--space-3)',
         }}>
-          <AlertCircle size={16} />
+          <AlertCircle size={14} />
           {error}
         </div>
       )}

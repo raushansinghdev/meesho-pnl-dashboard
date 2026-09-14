@@ -1,4 +1,5 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import React from 'react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Sector } from 'recharts';
 
 /**
  * RevenueSplit — Donut chart showing how settlement breaks down:
@@ -40,14 +41,18 @@ export default function RevenueSplit({ overall }) {
     const d = payload[0].payload;
     return (
       <div style={{
-        background: 'var(--bg-elevated)',
-        border: '1px solid var(--border-medium)',
+        backgroundColor: '#1e2130',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
         borderRadius: 'var(--radius-md)',
         padding: 'var(--space-2) var(--space-3)',
         fontSize: 'var(--text-sm)',
+        lineHeight: 1.5,
+        color: '#e2e4ea',
+        boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(12px)',
       }}>
-        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{d.name}</div>
-        <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+        <div style={{ fontWeight: 600, color: '#ffffff' }}>{d.name}</div>
+        <div style={{ fontFamily: 'var(--font-mono)', color: '#e2e4ea' }}>
           ₹{fmtFull(d.value)}
         </div>
       </div>
@@ -84,7 +89,13 @@ export default function RevenueSplit({ overall }) {
                 stroke="none"
               >
                 {data.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
+                  <Cell 
+                    key={index} 
+                    fill={entry.color} 
+                    fillOpacity={1}
+                    className="chart-cell pie-slice"
+                    stroke="none"
+                  />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />

@@ -1,3 +1,4 @@
+import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const STATUS_COLORS = {
@@ -14,7 +15,7 @@ const STATUS_COLORS = {
 const STATUS_LABELS = {
   delivered: 'Delivered',
   exchange: 'Exchange',
-  rto: 'RTO',
+  rto: 'Courier Return',
   return: 'Return',
   cancelled: 'Cancelled',
   lost: 'Lost',
@@ -43,14 +44,18 @@ export default function StatusBreakdown({ breakdown }) {
     const d = payload[0].payload;
     return (
       <div style={{
-        background: 'var(--bg-elevated)',
-        border: '1px solid var(--border-medium)',
+        backgroundColor: '#1e2130',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
         borderRadius: 'var(--radius-md)',
         padding: 'var(--space-2) var(--space-3)',
         fontSize: 'var(--text-sm)',
+        lineHeight: 1.5,
+        color: '#e2e4ea',
+        boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(12px)',
       }}>
-        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{d.name}</div>
-        <div style={{ color: 'var(--text-secondary)' }}>{d.value} orders ({d.percentage}%)</div>
+        <div style={{ fontWeight: 600, color: '#ffffff' }}>{d.name}</div>
+        <div style={{ color: '#e2e4ea' }}>{d.value} orders ({d.percentage}%)</div>
       </div>
     );
   };
@@ -70,23 +75,29 @@ export default function StatusBreakdown({ breakdown }) {
         <div className="section-count">{totalOrders} total</div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-5)' }}>
         {/* Donut */}
-        <div style={{ width: 180, height: 180, flexShrink: 0 }}>
+        <div style={{ width: 200, height: 200, flexShrink: 0 }}>
           <ResponsiveContainer>
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={52}
-                outerRadius={80}
+                innerRadius={55}
+                outerRadius={85}
                 paddingAngle={2}
                 dataKey="value"
                 stroke="none"
               >
                 {data.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
+                  <Cell 
+                    key={index} 
+                    fill={entry.color} 
+                    fillOpacity={1}
+                    className="chart-cell pie-slice"
+                    stroke="none"
+                  />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
@@ -96,7 +107,7 @@ export default function StatusBreakdown({ breakdown }) {
         </div>
 
         {/* Legend */}
-        <div className="donut-legend" style={{ flex: 1 }}>
+        <div className="donut-legend" style={{ width: '100%' }}>
           {data.map((d, i) => (
             <div key={i} className="donut-legend__item">
               <div className="donut-legend__label">
