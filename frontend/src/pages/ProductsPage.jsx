@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Package, Upload } from 'lucide-react';
+import { Search, Package, Upload, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function ProductsPage({ pnlData }) {
@@ -59,24 +59,22 @@ export default function ProductsPage({ pnlData }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+        <div className="products-controls">
+          <div className="products-search">
+            <Search size={15} className="products-search__icon" />
             <input
               type="text"
-              placeholder="Search product or SKU"
-              className="input-field"
-              style={{ paddingLeft: '36px', width: '260px' }}
+              placeholder="Search product or SKU…"
+              className="products-search__input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Sort by</span>
+          <div className="products-sort">
+            <SlidersHorizontal size={14} style={{ color: 'var(--text-tertiary)' }} />
             <select
-              className="input-field"
-              style={{ width: '140px', cursor: 'pointer' }}
+              className="products-sort__select"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
@@ -121,10 +119,10 @@ export default function ProductsPage({ pnlData }) {
 
                 {/* ── Badges ── */}
                 <div className="product-card__badges">
-                  <span className="product-badge product-badge--blue">
+                  <span className="product-badge">
                     {fmtWhole(avgSalePrice)} LP
                   </span>
-                  <span className="product-badge product-badge--red">
+                  <span className="product-badge">
                     {fmtWhole(unitCost)} cost
                   </span>
                 </div>
@@ -136,15 +134,15 @@ export default function ProductsPage({ pnlData }) {
                     <span className="product-stat__label">TOTAL</span>
                   </div>
                   <div className="product-stat">
-                    <span className="product-stat__value" style={{ color: 'var(--success)' }}>{delivered}</span>
+                    <span className="product-stat__value">{delivered}</span>
                     <span className="product-stat__label">DELIVERED</span>
                   </div>
                   <div className="product-stat">
-                    <span className="product-stat__value" style={{ color: 'var(--danger)' }}>{rto}</span>
+                    <span className="product-stat__value">{rto}</span>
                     <span className="product-stat__label">RTO</span>
                   </div>
                   <div className="product-stat">
-                    <span className="product-stat__value" style={{ color: 'var(--warning)' }}>{returnOrders}</span>
+                    <span className="product-stat__value">{returnOrders}</span>
                     <span className="product-stat__label">RETURN</span>
                   </div>
                 </div>
@@ -180,7 +178,7 @@ export default function ProductsPage({ pnlData }) {
                   <div>
                     <div className="product-card__footer-label">Net Profit</div>
                     <div className={`product-card__profit ${isProfit ? 'product-card__profit--up' : 'product-card__profit--down'}`}>
-                      {isProfit ? '+' : '-'}{fmt(row.profit)}
+                      {fmt(row.profit)}
                     </div>
                   </div>
                   {row.margin_pct !== null && (
