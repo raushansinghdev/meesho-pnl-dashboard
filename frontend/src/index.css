@@ -991,4 +991,201 @@ input[type="number"] {
     padding-left: var(--space-4);
     padding-right: var(--space-4);
   }
+  .products-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* =================================================================
+   Product Cards — Dedicated Products Page
+   ================================================================= */
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ── Card Shell ── */
+.product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Header ── */
+.product-card__header {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+.product-card__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--purple-muted);
+  color: var(--purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.product-card__title-block {
+  min-width: 0;
+  flex: 1;
+}
+.product-card__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.product-card__sku {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+/* ── Badges ── */
+.product-card__badges {
+  display: flex;
+  gap: var(--space-2);
+}
+.product-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.02em;
+}
+.product-badge--blue {
+  background: var(--info-muted);
+  color: var(--info);
+}
+.product-badge--red {
+  background: var(--danger-muted);
+  color: var(--danger);
+}
+
+/* ── Order Stats ── */
+.product-card__stats {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+}
+.product-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.product-stat__value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.product-stat__label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Stacked Progress Bar ── */
+.product-card__bar {
+  display: flex;
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--bg-elevated);
+  gap: 1px;
+}
+.product-bar__seg {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.product-bar__seg--success { background: var(--success); }
+.product-bar__seg--danger  { background: var(--danger); }
+.product-bar__seg--warning { background: var(--warning); }
+.product-bar__seg--muted   { background: var(--border-medium); }
+
+/* ── Financials ── */
+.product-card__financials {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+.product-fin-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+.product-fin-row__val {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+.product-fin-row__val--danger {
+  color: var(--danger);
+}
+
+/* ── Profit Footer ── */
+.product-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--border-medium);
+}
+.product-card__footer-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.product-card__profit {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.product-card__profit--up   { color: var(--success); }
+.product-card__profit--down { color: var(--danger); }
+
+.product-card__margin {
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+}
+.product-card__margin--up {
+  color: var(--success);
+  background: var(--success-muted);
+}
+.product-card__margin--down {
+  color: var(--danger);
+  background: var(--danger-muted);
 }

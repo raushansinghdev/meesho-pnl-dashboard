@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Package } from 'lucide-react';
+import { Search, Package, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function ProductsPage({ pnlData }) {
@@ -21,7 +21,7 @@ export default function ProductsPage({ pnlData }) {
               Go to Upload, drop your Meesho payment file, and compute your P&L first.
             </p>
             <Link to="/upload" className="btn btn--primary" style={{ marginTop: 'var(--space-4)' }}>
-              Go to Upload
+              <Upload size={16} /> Go to Upload
             </Link>
           </div>
         </div>
@@ -31,9 +31,8 @@ export default function ProductsPage({ pnlData }) {
 
   const { sku_rows, overall } = pnlData;
 
-  // Filter and sort
-  const filtered = sku_rows.filter(r => 
-    r.sku.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filtered = sku_rows.filter(r =>
+    r.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (r.product_name && r.product_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -45,38 +44,38 @@ export default function ProductsPage({ pnlData }) {
   });
 
   const fmt = (v) => `₹${Math.abs(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const fmtWhole = (v) => `₹${Math.abs(v).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  const fmtWhole = (v) => `₹${Math.round(Math.abs(v)).toLocaleString('en-IN')}`;
 
   return (
     <>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
         <div>
           <h1 className="page-header__title">
-            <Package size={20} style={{ color: 'var(--pink)' }} />
+            <Package size={20} style={{ color: 'var(--purple)' }} />
             Products ({sorted.length})
           </h1>
           <p className="page-header__subtitle" style={{ fontFamily: 'var(--font-mono)' }}>
             {overall?.payment_window_start} → {overall?.payment_window_end}
           </p>
         </div>
-        
+
         <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative' }}>
             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
-            <input 
-              type="text" 
-              placeholder="Search product or SKU" 
+            <input
+              type="text"
+              placeholder="Search product or SKU"
               className="input-field"
               style={{ paddingLeft: '36px', width: '260px' }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Sort by</span>
-            <select 
-              className="input-field" 
+            <select
+              className="input-field"
               style={{ width: '140px', cursor: 'pointer' }}
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -90,101 +89,102 @@ export default function ProductsPage({ pnlData }) {
       </div>
 
       <div className="page-body">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+        <div className="products-grid">
           {sorted.map(row => {
             const isProfit = row.profit > 0;
-            // cogs_making and cogs_packaging are totals in the backend. Divide by units for unit cost.
             const unitCost = row.units > 0 ? (row.cogs_making + row.cogs_packaging) / row.units : 0;
-            
-            // Fallbacks in case the backend hasn't been restarted/re-computed yet
             const avgSalePrice = row.avg_sale_price ?? (row.units > 0 ? row.gross_sale_amount / row.units : 0);
             const delivered = row.delivered_orders ?? 0;
             const rto = row.rto_orders ?? 0;
             const returnOrders = row.return_orders ?? 0;
             const rtoCost = row.rto_cost ?? 0;
-            
+            const total = row.orders || 1;
+            const deliveredPct = (delivered / total) * 100;
+            const rtoPct = (rto / total) * 100;
+            const returnPct = (returnOrders / total) * 100;
+            const otherPct = 100 - deliveredPct - rtoPct - returnPct;
+
             return (
-              <div key={row.sku} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                {/* Header */}
-                <div>
-                  <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
-                    <div style={{ 
-                      width: 40, height: 40, borderRadius: 'var(--radius-md)', 
-                      background: 'var(--purple-muted)', color: 'var(--purple)', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                    }}>
-                      <Package size={20} />
+              <div key={row.sku} className="product-card">
+                {/* ── Header ── */}
+                <div className="product-card__header">
+                  <div className="product-card__icon">
+                    <Package size={18} />
+                  </div>
+                  <div className="product-card__title-block">
+                    <div className="product-card__name">
+                      {row.product_name || row.sku}
                     </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {row.product_name || row.sku}
-                      </div>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
-                        {row.sku}
-                      </div>
+                    <div className="product-card__sku">{row.sku}</div>
+                  </div>
+                </div>
+
+                {/* ── Badges ── */}
+                <div className="product-card__badges">
+                  <span className="product-badge product-badge--blue">
+                    {fmtWhole(avgSalePrice)} LP
+                  </span>
+                  <span className="product-badge product-badge--red">
+                    {fmtWhole(unitCost)} cost
+                  </span>
+                </div>
+
+                {/* ── Order Stats ── */}
+                <div className="product-card__stats">
+                  <div className="product-stat">
+                    <span className="product-stat__value">{row.orders}</span>
+                    <span className="product-stat__label">TOTAL</span>
+                  </div>
+                  <div className="product-stat">
+                    <span className="product-stat__value" style={{ color: 'var(--success)' }}>{delivered}</span>
+                    <span className="product-stat__label">DELIVERED</span>
+                  </div>
+                  <div className="product-stat">
+                    <span className="product-stat__value" style={{ color: 'var(--danger)' }}>{rto}</span>
+                    <span className="product-stat__label">RTO</span>
+                  </div>
+                  <div className="product-stat">
+                    <span className="product-stat__value" style={{ color: 'var(--warning)' }}>{returnOrders}</span>
+                    <span className="product-stat__label">RETURN</span>
+                  </div>
+                </div>
+
+                {/* ── Progress Bar ── */}
+                <div className="product-card__bar">
+                  {deliveredPct > 0 && <div className="product-bar__seg product-bar__seg--success" style={{ width: `${deliveredPct}%` }} />}
+                  {rtoPct > 0 && <div className="product-bar__seg product-bar__seg--danger" style={{ width: `${rtoPct}%` }} />}
+                  {returnPct > 0 && <div className="product-bar__seg product-bar__seg--warning" style={{ width: `${returnPct}%` }} />}
+                  {otherPct > 0 && <div className="product-bar__seg product-bar__seg--muted" style={{ width: `${otherPct}%` }} />}
+                </div>
+
+                {/* ── Financials ── */}
+                <div className="product-card__financials">
+                  <div className="product-fin-row">
+                    <span>Settlement</span>
+                    <span className="product-fin-row__val">{fmt(row.net_settlement)}</span>
+                  </div>
+                  <div className="product-fin-row">
+                    <span>Item Cost</span>
+                    <span className="product-fin-row__val">{fmt(row.cogs)}</span>
+                  </div>
+                  {rtoCost > 0 && (
+                    <div className="product-fin-row">
+                      <span>RTO Cost</span>
+                      <span className="product-fin-row__val product-fin-row__val--danger">{fmt(rtoCost)}</span>
                     </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
-                    <span className="badge badge--info" style={{ fontWeight: 600 }}>
-                      {fmtWhole(avgSalePrice)} LP
-                    </span>
-                    <span className="badge badge--warning" style={{ fontWeight: 600 }}>
-                      {fmtWhole(unitCost)} cost
-                    </span>
-                  </div>
+                  )}
                 </div>
 
-                {/* Orders Breakdown */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) 0', borderTop: '1px solid var(--border-medium)', borderBottom: '1px solid var(--border-medium)' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>{row.orders}</div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>TOTAL</div>
-                    <div style={{ height: '3px', background: 'var(--border-medium)', marginTop: '4px', borderRadius: '2px' }} />
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>{delivered}</div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>DELIVERED</div>
-                    <div style={{ height: '3px', background: 'var(--success)', marginTop: '4px', borderRadius: '2px' }} />
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--danger)' }}>{rto}</div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>RTO</div>
-                    <div style={{ height: '3px', background: 'var(--danger)', marginTop: '4px', borderRadius: '2px' }} />
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--warning)' }}>{returnOrders}</div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>RETURN</div>
-                    <div style={{ height: '3px', background: 'var(--warning)', marginTop: '4px', borderRadius: '2px' }} />
-                  </div>
-                </div>
-
-                {/* Financials */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Settlement</span>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{fmt(row.net_settlement)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Item Cost</span>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{fmt(row.cogs)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>RTO Cost</span>
-                    <span style={{ fontWeight: 600, color: 'var(--danger)' }}>{fmt(rtoCost)}</span>
-                  </div>
-                </div>
-
-                {/* Net Profit */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: 'var(--space-3)', borderTop: '1px dashed var(--border-medium)' }}>
+                {/* ── Profit Footer ── */}
+                <div className="product-card__footer">
                   <div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: '4px' }}>Net Profit</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: isProfit ? 'var(--success)' : 'var(--danger)' }}>
-                      {fmt(row.profit)}
+                    <div className="product-card__footer-label">Net Profit</div>
+                    <div className={`product-card__profit ${isProfit ? 'product-card__profit--up' : 'product-card__profit--down'}`}>
+                      {isProfit ? '+' : '-'}{fmt(row.profit)}
                     </div>
                   </div>
                   {row.margin_pct !== null && (
-                    <div style={{ fontSize: '1.125rem', fontWeight: 600, color: isProfit ? 'var(--success)' : 'var(--danger)' }}>
+                    <div className={`product-card__margin ${isProfit ? 'product-card__margin--up' : 'product-card__margin--down'}`}>
                       {row.margin_pct}%
                     </div>
                   )}
@@ -193,6 +193,12 @@ export default function ProductsPage({ pnlData }) {
             );
           })}
         </div>
+
+        {sorted.length === 0 && (
+          <div className="card" style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>
+            No products found matching "{searchTerm}"
+          </div>
+        )}
       </div>
     </>
   );
