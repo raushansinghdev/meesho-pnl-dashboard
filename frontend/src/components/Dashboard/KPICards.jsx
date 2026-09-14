@@ -11,11 +11,13 @@ export default function KPICards({ overall, status_breakdown }) {
     ? Math.round(((overall.cogs || 0) - (overall.cogs_making || 0)) * 100) / 100
     : 0;
 
-  let rtoReturnOrders = 0;
+  let rtoCount = 0;
+  let returnCount = 0;
   if (status_breakdown) {
-    rtoReturnOrders = status_breakdown
-      .filter(s => s.status === 'rto' || s.status === 'return')
-      .reduce((sum, s) => sum + (s.order_count || 0), 0);
+    const rto = status_breakdown.find(s => s.status === 'rto');
+    const ret = status_breakdown.find(s => s.status === 'return');
+    rtoCount = rto?.order_count || 0;
+    returnCount = ret?.order_count || 0;
   }
 
   const cards = [
@@ -36,7 +38,7 @@ export default function KPICards({ overall, status_breakdown }) {
     {
       label: 'RTO / RETURN',
       value: rtoReturnCost,
-      subtitle: `${rtoReturnOrders} orders`,
+      subtitle: `${rtoCount} RTO, ${returnCount} Return`,
       icon: RotateCcw,
       iconClass: 'kpi-card__icon--yellow',
     },
