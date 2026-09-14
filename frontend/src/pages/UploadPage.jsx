@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Upload, Play, Loader, CheckCircle } from 'lucide-react';
+import { Upload, Play, Loader, CheckCircle, ArrowRight } from 'lucide-react';
 import FileUpload from '../components/Upload/FileUpload';
 import LossRates from '../components/Settings/LossRates';
 import { computePnL } from '../api/client';
+import { useNavigate } from 'react-router-dom';
 
 export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
   const [paymentFileId, setPaymentFileId] = useState(null);
@@ -10,6 +11,7 @@ export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
   const [computing, setComputing] = useState(false);
   const [error, setError] = useState(null);
   const [computed, setComputed] = useState(false);
+  const navigate = useNavigate();
 
   const handleCompute = async () => {
     if (!paymentFileId) return;
@@ -21,6 +23,7 @@ export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
       const result = await computePnL(paymentFileId, ordersFileId, lossRates);
       onPnLComputed(result);
       setComputed(true);
+      navigate('/');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -32,85 +35,42 @@ export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
     <>
       <div className="page-header">
         <h1 className="page-header__title">
-          <Upload size={24} style={{ verticalAlign: 'middle', marginRight: 'var(--space-2)', color: 'var(--accent)' }} />
-          Upload & Compute
+          <Upload size={20} style={{ color: 'var(--accent)' }} />
+          Upload
         </h1>
         <p className="page-header__subtitle">
-          Upload your Meesho exports, set loss rates, and compute your realized P&L
+          Upload Meesho exports and compute your realized P&L
         </p>
       </div>
 
       <div className="page-body">
-        {/* Step 1: File Uploads */}
-        <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
-          <div className="section-title">
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              background: 'var(--accent)',
-              color: 'var(--text-inverse)',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 700,
-            }}>1</span>
-            Upload Files
-          </div>
+        {/* File Uploads */}
+        <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
+          <div className="section-title" style={{ marginBottom: 'var(--space-4)' }}>Upload Files</div>
           <FileUpload
             onPaymentUploaded={(meta) => setPaymentFileId(meta.file_id)}
             onOrdersUploaded={(meta) => setOrdersFileId(meta.file_id)}
           />
         </div>
 
-        {/* Step 2: Loss Rate Config */}
-        <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
-          <div className="section-title">
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              background: 'var(--accent)',
-              color: 'var(--text-inverse)',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 700,
-            }}>2</span>
-            Loss Rate Assumptions
+        {/* Loss Rates — Compact */}
+        <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+            <div className="section-title" style={{ marginBottom: 0 }}>Loss Rates</div>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+              Adjust COGS fractions per outcome
+            </span>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-4)' }}>
-            These control what fraction of COGS is charged for each order outcome.
-            Defaults match your current CLI settings.
-          </p>
           <LossRates lossRates={lossRates} onChange={setLossRates} />
         </div>
 
-        {/* Step 3: Compute */}
+        {/* Compute */}
         <div className="card">
-          <div className="section-title">
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              background: 'var(--accent)',
-              color: 'var(--text-inverse)',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 700,
-            }}>3</span>
-            Compute P&L
-          </div>
-
           {error && (
             <div style={{
-              padding: 'var(--space-3) var(--space-4)',
+              padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
-              marginBottom: 'var(--space-4)',
+              marginBottom: 'var(--space-3)',
               background: 'var(--danger-muted)',
               color: 'var(--danger)',
               fontSize: 'var(--text-sm)',
@@ -121,39 +81,45 @@ export default function UploadPage({ lossRates, setLossRates, onPnLComputed }) {
 
           {computed && (
             <div style={{
-              padding: 'var(--space-3) var(--space-4)',
+              padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
-              marginBottom: 'var(--space-4)',
+              marginBottom: 'var(--space-3)',
               background: 'var(--success-muted)',
               color: 'var(--success)',
               fontSize: 'var(--text-sm)',
               display: 'flex',
               alignItems: 'center',
-              gap: 'var(--space-2)',
+              justifyContent: 'space-between',
             }}>
-              <CheckCircle size={16} />
-              P&L computed successfully! Head to the Dashboard to see your results.
+              <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <CheckCircle size={14} />
+                P&L computed successfully!
+              </span>
+              <button className="btn btn--ghost btn--sm" onClick={() => navigate('/')} style={{ color: 'var(--success)' }}>
+                View Dashboard <ArrowRight size={13} />
+              </button>
             </div>
           )}
 
-          <button
-            className="btn btn--primary btn--lg"
-            onClick={handleCompute}
-            disabled={!paymentFileId || computing}
-            style={{ width: '100%' }}
-          >
-            {computing ? (
-              <><Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> Computing P&L...</>
-            ) : (
-              <><Play size={18} /> Compute Realized P&L</>
+          <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+            <button
+              className="btn btn--primary"
+              onClick={handleCompute}
+              disabled={!paymentFileId || computing}
+              style={{ flex: 1 }}
+            >
+              {computing ? (
+                <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> Computing...</>
+              ) : (
+                <><Play size={16} /> Compute P&L</>
+              )}
+            </button>
+            {!paymentFileId && (
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                Upload a payment file first
+              </span>
             )}
-          </button>
-
-          {!paymentFileId && (
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-3)', textAlign: 'center' }}>
-              Upload a payment file first to enable computation.
-            </p>
-          )}
+          </div>
         </div>
       </div>
     </>
